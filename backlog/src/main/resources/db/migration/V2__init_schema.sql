@@ -1,0 +1,1 @@
+ALTER TABLE state ALTER COLUMN description TYPE TEXT

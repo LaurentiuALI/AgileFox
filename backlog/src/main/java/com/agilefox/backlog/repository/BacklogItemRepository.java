@@ -1,0 +1,12 @@
+package com.agilefox.backlog.repository;
+
+import com.agilefox.backlog.model.BacklogItem;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+@Repository
+public interface BacklogItemRepository extends JpaRepository<BacklogItem, Long> {
+    public List<BacklogItem> findByProjectId(Long projectId);
+}
