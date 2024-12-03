@@ -13,7 +13,7 @@
     --popover-foreground: 20 14.3% 4.1%;
     --primary: 24.6 95% 53.1%;
     --primary-foreground: 60 9.1% 97.8%;
-    --secondary: 60 4.8% 95.9%;
+    --secondary: 20 4% 15%;
     --secondary-foreground: 24 9.8% 10%;
     --muted: 60 4.8% 95.9%;
     --muted-foreground: 25 5.3% 44.7%;
@@ -36,7 +36,7 @@
     /* CSS: .bg-gradient { background: var(--gradient) } */
     --container-background: 240 6% 10%;
     --gradient: linear-gradient(to top left, #e65c00, #f9d423);
-    --background: 25 65% 3.6%;
+    --background: 0 0% 5%;
     --foreground: 25 10% 97.25%;
 
     --card: 20 14.3% 4.1%;
@@ -47,7 +47,7 @@
 
     --primary: 25 100% 45%;
     --primary-foreground: 60 9.1% 97.8%;
-    --secondary: 12 6.5% 15.1%;
+    --secondary: 20 4% 15%;
     --secondary-foreground: 60 9.1% 97.8%;
     --muted: 25 50% 13.5%;
     --muted-foreground: 25 10% 54.5%;
