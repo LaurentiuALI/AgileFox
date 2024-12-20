@@ -1,13 +1,11 @@
-"use client";
 import Image from "next/image";
 import Link from "next/link";
-import { ModeToggle } from "./toggleMode";
-import Authentication from "./authentication";
 import BacklogToolbar from "./backlogToolbar";
+import Profile from "./profile";
 
 export default function Navigation() {
   return (
-    <nav className="w-full h-20 flex justify-between items-center bg-containerBackground relative md:h-28">
+    <nav className="w-full h-20 flex items-center bg-containerBackground relative md:h-28">
       <Link href="/" passHref>
         <div className="w-20 h-20 relative  md:h-28 md:w-28">
           <Image
@@ -19,9 +17,10 @@ export default function Navigation() {
           />
         </div>
       </Link>
-      <BacklogToolbar />
-      <Authentication />
-      <ModeToggle />
+      <div className="flex justify-end items-center gap-20 w-full">
+        <BacklogToolbar />
+        <Profile />
+      </div>
     </nav>
   );
 }
