@@ -9,7 +9,7 @@ projects.env.properties
 .env
 
 ### VOLUMES ###
-projects/project_volume/
+project_volume
 
 
 

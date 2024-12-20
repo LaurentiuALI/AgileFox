@@ -9,7 +9,7 @@ backlog.env.properties
 .env
 
 ### VOLUMES ###
-backlog/backlog_volume/
+backlog_volume
 
 ### STS ###
 .apt_generated
