@@ -25,4 +25,6 @@ public class Project {
     @Column(name = "estimation_type", columnDefinition = "estimation_type")
     private EstimationType estimationType;
 
+    private String abbrev;
+
 }

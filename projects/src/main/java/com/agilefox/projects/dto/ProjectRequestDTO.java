@@ -9,4 +9,5 @@ public class ProjectRequestDTO {
     String name;
     String description;
     String estimation_type;
+    String abbrev;
 }

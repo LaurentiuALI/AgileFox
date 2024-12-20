@@ -28,14 +28,21 @@ public class TypeServiceImpl implements TypeService {
        return typeRepository.findAll().stream().map(type -> new TypeResponseDTO(type.getId(), type.getName(), type.getProjectId())).collect(Collectors.toList());
     }
 
+    public List<TypeResponseDTO> getTypesOfProject(Long projectId){
+        log.info("Query for types");
+
+        return typeRepository.findByProjectId(projectId).stream().map(type -> new TypeResponseDTO(type.getId(), type.getName(), type.getProjectId())).collect(Collectors.toList());
+
+    }
+
     @Override
     public TypeResponseDTO addType(TypeRequestDTO typeRequest) {
         log.info("START - Adding type {}", typeRequest.getName());
         log.info("START - query for project existence with id {}", typeRequest.getProjectId());
-        var projectExist = projectClient.projectExist(typeRequest.getProjectId());
+        var projectExist = projectClient.getProjectById(typeRequest.getProjectId());
         log.info("END - query for project existence with id {}", typeRequest.getProjectId());
 
-        if(projectExist) {
+        if(projectExist != null) {
             Type type = Type.builder()
                     .name(typeRequest.getName())
                     .projectId(typeRequest.getProjectId())

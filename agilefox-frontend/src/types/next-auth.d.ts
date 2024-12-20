@@ -8,6 +8,7 @@ declare module "next-auth" {
       access_token?: string;
       refresh_token?: string;
       expires_at?: number;
+      error?: string;
     } & DefaultSession["user"];
   }
 }
@@ -18,5 +19,11 @@ declare module "next-auth/jwt" {
     id_token?: string;
     refresh_token?: string;
     expires_at?: number;
+    error?: string;
+    client_id?: string;
+    client_secret?: string;
+    issuer?: string;
+    refresh_token?: string;
+    grant_type?: string;
   }
 }

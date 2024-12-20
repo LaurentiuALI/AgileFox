@@ -1,8 +1,11 @@
 package com.agilefox.backlog.service.impl;
 
 import com.agilefox.backlog.client.ProjectClient;
+import com.agilefox.backlog.dto.ProjectResponseDTO;
 import com.agilefox.backlog.dto.StateRequestDTO;
 import com.agilefox.backlog.dto.StateResponseDTO;
+import com.agilefox.backlog.exceptions.ResourceNotFoundException;
+import com.agilefox.backlog.exceptions.StateAlreadyExistsException;
 import com.agilefox.backlog.model.State;
 import com.agilefox.backlog.repository.StateRepository;
 import com.agilefox.backlog.service.StateService;
@@ -12,7 +15,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -34,26 +36,28 @@ public class StateServiceImpl implements StateService {
     }
 
     @Override
-    public StateResponseDTO getStateById(Long id) {
+    public List<StateResponseDTO> getStatesOfProject(Long id) {
         log.info("START - Query for state with id {}", id);
-        Optional<State> state = stateRepository.findById(id);
-        if (state.isPresent()) {
-            log.info("END - Query for state with id {}", id);
-            return new StateResponseDTO(state.get().getId(), state.get().getName(), state.get().getDescription(), state.get().getProjectId());
-        } else {
-            log.info("END - Query for state with id {}", id);
-            return null;
-        }
+        List<State> states = stateRepository.findByProjectId(id);
+
+        return states.stream().map(state -> new StateResponseDTO(state.getId(), state.getName(), state.getDescription(), state.getProjectId())).collect(Collectors.toList());
     }
 
     @Override
     public StateResponseDTO addState(StateRequestDTO stateRequest){
         log.info("START - Adding state {}", stateRequest);
 
+        State existingState = stateRepository.findByName(stateRequest.getName()).orElse(null);
+
+        if(existingState != null) {
+            log.info("END - Adding state {}", stateRequest);
+            throw new StateAlreadyExistsException("The state with name " + stateRequest.getName() + " already exists");
+        }
+
         log.info("START - query for project existence with id {}", stateRequest.getProjectId());
-        var projectExist = projectClient.projectExist(stateRequest.getProjectId());
+        ProjectResponseDTO project = projectClient.getProjectById(stateRequest.getProjectId());
         log.info("END - query for project existence with id {}", stateRequest.getProjectId());
-        if(projectExist){
+        if(project != null){
             State state = State.builder()
                     .name(stateRequest.getName())
                     .description(stateRequest.getDescription())
@@ -61,11 +65,12 @@ public class StateServiceImpl implements StateService {
                     .build();
             stateRepository.save(state);
             log.info("END - Adding state {}", stateRequest);
+            return new StateResponseDTO(state.getId(), state.getName(), state.getDescription(), state.getProjectId());
         } else {
             log.error("Project with id {} not found", stateRequest.getProjectId());
+            log.info("END - query for project existence with id {}", stateRequest.getProjectId());
+            throw new ResourceNotFoundException("The project with id " + stateRequest.getProjectId() + " could not be found");
         }
-        log.info("END - Adding state {}", stateRequest);
-        return null;
     }
 
     @Override
@@ -78,6 +83,7 @@ public class StateServiceImpl implements StateService {
             log.info("END - Deleting state {}", id);
         } else{
             log.error("State with id {} not found", id);
+            throw new ResourceNotFoundException("State with id " + id + " not found");
         }
     }
 
@@ -94,7 +100,7 @@ public class StateServiceImpl implements StateService {
             return new StateResponseDTO(id, state.getName(), state.getDescription(), state.getProjectId());
         } else{
             log.error("State with id {} not found", id);
-            return null;
+            throw new ResourceNotFoundException("State with id " + id + " not found");
         }
     }
 

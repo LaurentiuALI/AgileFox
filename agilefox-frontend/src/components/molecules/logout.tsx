@@ -1,5 +1,4 @@
-// "use client";
-import { signOut, useSession } from "next-auth/react";
+import { signOut } from "next-auth/react";
 
 async function KeycloakSessionSignOut() {
   try {
@@ -10,8 +9,6 @@ async function KeycloakSessionSignOut() {
 }
 
 export default function Logout() {
-  const { data: session } = useSession();
-
   return (
     <button
       onClick={async () => {
@@ -20,8 +17,7 @@ export default function Logout() {
         );
       }}
     >
-      Signed in as {session?.user?.email}
-      Logout from Keycloaks?
+      Logout from Keycloak
     </button>
   );
 }

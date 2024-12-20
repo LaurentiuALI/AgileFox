@@ -9,7 +9,9 @@ projects.env.properties
 .env
 
 ### VOLUMES ###
-./project_volume
+projects/project_volume/
+
+
 
 ### STS ###
 .apt_generated

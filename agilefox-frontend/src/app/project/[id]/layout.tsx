@@ -1,11 +1,10 @@
-import { ProjectSidebar } from "@/components/molecules/project-sidebar";
+import { ProjectSidebar } from "@/components/molecules/projectSidebar";
 import { ProjectDrawer } from "@/components/molecules/projectDrawer";
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
-import { useMediaQuery } from "@/hooks/use-media-query";
 
 export default async function ProjectLayout({
   children,

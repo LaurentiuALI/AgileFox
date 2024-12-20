@@ -8,4 +8,7 @@ import java.util.List;
 public interface ProjectService {
     public ProjectResponseDTO addProject(ProjectRequestDTO project);
     public List<ProjectResponseDTO> getAllProjects();
+    public ProjectResponseDTO getProjectById(Long id);
+    public void deleteProjectById(Long id);
 }
+

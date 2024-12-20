@@ -13,4 +13,5 @@ public class ProjectResponseDTO {
     String name;
     String description;
     EstimationType estimationType;
+    String abbrev;
 }

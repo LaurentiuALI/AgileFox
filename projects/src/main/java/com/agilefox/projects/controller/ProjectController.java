@@ -32,7 +32,13 @@ public class ProjectController {
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public boolean projectExist(@PathVariable long id){
+    public ProjectResponseDTO getProjectById(@PathVariable long id){
         return projectServiceImpl.getProjectById(id);
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public void deleteProject(@PathVariable long id){
+        projectService.deleteProjectById(id);
     }
 }

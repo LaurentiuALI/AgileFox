@@ -1,4 +1,4 @@
-import { getAllBacklogItems } from "@/util/actions/backlogItem/get-all-backlogItems";
+import { getAllBacklogItems } from "@/util/actions/backlog/backlogItem/get-all-backlogItems";
 import {
   Table,
   TableBody,

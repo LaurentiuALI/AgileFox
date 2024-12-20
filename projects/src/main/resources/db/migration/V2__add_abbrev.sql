@@ -1,0 +1,1 @@
+ALTER TABLE project ADD abbrev varchar(3);

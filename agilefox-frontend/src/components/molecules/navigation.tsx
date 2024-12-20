@@ -2,15 +2,12 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ModeToggle } from "./toggleMode";
-import Login from "./login";
-import Logout from "./logout";
-import { useSession } from "next-auth/react";
+import Authentication from "./authentication";
+import BacklogToolbar from "./backlogToolbar";
 
 export default function Navigation() {
-  const { data: session } = useSession();
-
   return (
-    <nav className="w-full h-20 flex justify-between bg-containerBackground relative md:h-28">
+    <nav className="w-full h-20 flex justify-between items-center bg-containerBackground relative md:h-28">
       <Link href="/" passHref>
         <div className="w-20 h-20 relative  md:h-28 md:w-28">
           <Image
@@ -22,7 +19,8 @@ export default function Navigation() {
           />
         </div>
       </Link>
-      {!session ? <Login /> : <Logout />}
+      <BacklogToolbar />
+      <Authentication />
       <ModeToggle />
     </nav>
   );

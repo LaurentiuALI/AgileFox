@@ -30,7 +30,18 @@ spring:
             - Path=/state/**,/type/**,/backlogitem/**
           filters:
             - PrefixPath=/api
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8080/realms/agilefox-spring-microservices
 server:
   port: 8085
 
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    reactor.netty.http.client: DEBUG
+    org.springframework.web: DEBUG
+    org.springframework.cloud: DEBUG
 
