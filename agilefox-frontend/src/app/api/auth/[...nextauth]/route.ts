@@ -2,8 +2,9 @@ import { encrypt } from "@/util/encrypt";
 import NextAuth, { NextAuthOptions } from "next-auth";
 import { JWT } from "next-auth/jwt";
 import KeycloakProvider from "next-auth/providers/keycloak";
+import { jwtDecode } from "jwt-decode";
 
-async function refreshAccesToken(token: JWT): Promise<JWT> {
+async function refreshAccessToken(token: JWT): Promise<JWT> {
   const body = new URLSearchParams({
     client_id: process.env.KEYCLOAK_CLIENT_ID!,
     client_secret: process.env.KEYCLOAK_CLIENT_SECRET!,
@@ -13,34 +14,38 @@ async function refreshAccesToken(token: JWT): Promise<JWT> {
 
   const resp = await fetch(`${process.env.REFRESH_TOKEN_URL}`, {
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body, // Pass the properly formatted URLSearchParams here
+    body,
     method: "POST",
   });
 
   const refreshToken = await resp.json();
   if (!resp.ok) throw refreshToken;
+
+  // Decode the new access token to get roles
+  const decoded = jwtDecode(refreshToken.access_token);
+  const clientId = process.env.KEYCLOAK_CLIENT_ID;
+  const roles =
+    decoded.realm_access?.roles ||
+    decoded.resource_access?.[clientId]?.roles ||
+    [];
+
   return {
     ...token,
-    acces_token: refreshToken.access_token,
+    access_token: refreshToken.access_token,
     id_token: refreshToken.id_token,
-    expires_at: refreshToken.expires_in + Math.floor(Date.now() / 1000),
-    refresh_token: refreshToken.refresh_token,
+    expires_at: Math.floor(Date.now() / 1000) + refreshToken.expires_in,
+    refresh_token: refreshToken.refresh_token ?? token.refresh_token,
+    roles: roles, // Add roles to the token
   };
 }
 
 export const AuthOption: NextAuthOptions = {
-  // Configure one or more authentication providers
   providers: [
-    // GithubProvider({
-    //   clientId: process.env.GITHUB_ID,
-    //   clientSecret: process.env.GITHUB_SECRET,
-    // }),
     KeycloakProvider({
       clientId: process.env.KEYCLOAK_CLIENT_ID,
       clientSecret: process.env.KEYCLOAK_CLIENT_SECRET,
       issuer: process.env.KEYCLOAK_ISSUER,
     }),
-    // ...add more providers here
   ],
 
   callbacks: {
@@ -48,41 +53,44 @@ export const AuthOption: NextAuthOptions = {
       const nowTimeStamp = Math.floor(Date.now() / 1000);
 
       if (account) {
-        // account is available during signin
-        // token.decoded = jwtDecode(account.accessToken)
+        // Decode access token on initial sign-in
+        const decoded = jwtDecode(account.access_token!);
+        const clientId = process.env.KEYCLOAK_CLIENT_ID;
 
-        console.log("account:" + JSON.stringify(account, null, 2));
+        // Extract roles from either realm_access or resource_access
+        const roles =
+          decoded.realm_access?.roles ||
+          decoded.resource_access?.[clientId]?.roles ||
+          [];
 
-        token.access_token = account.access_token;
-        token.id_token = account.id_token;
-        token.expires_at = account.expires_at;
-        token.refresh_token = account.refresh_token;
-        return token;
+        return {
+          ...token,
+          access_token: account.access_token,
+          id_token: account.id_token,
+          expires_at: account.expires_at,
+          refresh_token: account.refresh_token,
+          roles: roles, // Store roles in the token
+        };
       } else if (token.expires_at && nowTimeStamp < token.expires_at) {
-        // token is still valid
+        // If the token is still valid, keep the existing roles
         return token;
       } else {
-        console.log("Token expired. Will refresh...");
+        // Refresh token and update roles
         try {
-          const refreshedToken = await refreshAccesToken(token);
-          console.log(
-            "Refreshed token: " + JSON.stringify(refreshedToken, null, 2)
-          );
+          const refreshedToken = await refreshAccessToken(token);
           return refreshedToken;
         } catch (error) {
-          console.error(
-            "Error refreshing token: " + JSON.stringify(error, null, 2)
-          );
+          console.error("Error refreshing token:", error);
           return { ...token, error: "RefreshAccessTokenError" };
         }
       }
-      return token;
     },
     async session({ session, token }) {
+      // Expose roles in the session
       session.user.access_token = encrypt(token.access_token as string);
       session.user.id_token = encrypt(token.id_token as string);
+      session.user.roles = token.roles; // Add roles to the session
       session.user.error = token.error;
-
       return session;
     },
   },

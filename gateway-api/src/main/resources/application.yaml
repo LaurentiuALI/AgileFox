@@ -24,10 +24,10 @@ spring:
             - Path=/project/**
           filters:
             - PrefixPath=/api
-        - id: state-routes
+        - id: backlog-routes
           uri: lb://BACKLOG
           predicates:
-            - Path=/state/**,/type/**,/backlogitem/**
+            - Path=/state/**,/type/**,/backlogitem/**,/card/**,/checkitem/**
           filters:
             - PrefixPath=/api
   security:
@@ -35,6 +35,14 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: http://localhost:8080/realms/agilefox-spring-microservices
+          jwk-set-uri: ${spring.security.oauth2.resourceserver.jwt.issuer-uri}/protocol/openid-connect/certs
+
+jwt:
+  auth:
+    converter:
+      principle-attribute: preferred_username
+      resource-id: spring-client
+
 server:
   port: 8085
 

@@ -1,5 +1,4 @@
 "use client";
-import { useGetAllProjects } from "@/util/hooks/useGetAllProjects";
 import {
   Carousel,
   CarouselContent,
@@ -8,23 +7,19 @@ import {
   CarouselPrevious,
 } from "../ui/carousel";
 import ProjectCard from "./projectCard";
+import { useGetProjects } from "@/data/get-projects";
 
 export default function ProjectsCarousel() {
-  const { data } = useGetAllProjects();
-  if (data === undefined) {
+  const { data, isLoading } = useGetProjects();
+
+  if (isLoading && data === undefined) {
     return (
       <div className="bg-containerBackground flex justify-center">
         <div className="text-4xl p-4">Loading...</div>
       </div>
     );
   }
-  if (data.length === 0) {
-    return (
-      <div className="bg-containerBackground flex justify-center">
-        <div className="text-4xl p-4">No projects found</div>
-      </div>
-    );
-  }
+
   return (
     <div className="bg-containerBackground flex justify-center">
       <Carousel className="w-4/5 bg-containerBackground">

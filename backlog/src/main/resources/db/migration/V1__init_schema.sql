@@ -1,19 +1,40 @@
 
-CREATE TABLE type(
-                     id SERIAL PRIMARY KEY,
-                     name VARCHAR(20)
+CREATE TABLE IF NOT EXISTS type(
+    id SERIAL PRIMARY KEY,
+    name      VARCHAR(20),
+    projectId INTEGER
 );
-CREATE TABLE state(
-                      id SERIAL PRIMARY KEY,
-                      name VARCHAR(20),
-                      description VARCHAR(20)
+CREATE TABLE IF NOT EXISTS state(
+    id SERIAL   PRIMARY KEY,
+    name        VARCHAR(20),
+    description TEXT,
+    projectId   INTEGER
 );
 
-CREATE TABLE BACKLOG_ITEM(
-                             id SERIAL PRIMARY KEY,
-                             uid VARCHAR(10),
-                             typeId INTEGER references type,
-                             title TEXT,
-                             description TEXT,
-                             stateId INTEGER references state
-)
+CREATE TABLE IF NOT EXISTS backlogitem(
+    id          SERIAL PRIMARY KEY,
+    uid         VARCHAR(10),
+    typeId      INTEGER references type,
+    title       TEXT,
+    description TEXT,
+    stateId     INTEGER references state,
+    projectId   INTEGER
+);
+
+CREATE TABLE IF NOT EXISTS CARD(
+    id            SERIAL  PRIMARY KEY,
+    stateId       INTEGER REFERENCES state,
+    typeId        INTEGER REFERENCES type,
+    projectId     INTEGER,
+    title         VARCHAR(55) NOT NULL,
+    purpose       VARCHAR(255),
+    backlogitemId INTEGER  REFERENCES backlogitem ON UPDATE CASCADE ON DELETE CASCADE,
+    isTemplate    BOOLEAN DEFAULT FALSE
+);
+
+CREATE TABLE IF NOT EXISTS checkitem(
+    id              SERIAL PRIMARY KEY,
+    information     VARCHAR(255),
+    checked         BOOLEAN,
+    cardId          INTEGER REFERENCES CARD ON UPDATE CASCADE ON DELETE CASCADE
+);

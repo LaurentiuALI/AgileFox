@@ -1,9 +1,10 @@
-"use client";
 import ProjectsCarousel from "@/components/molecules/projectsCarousel";
-import { useSession } from "next-auth/react";
+import { getServerSession } from "next-auth/next";
+import { AuthOption } from "@/app/api/auth/[...nextauth]/route";
 
-export default function Home() {
-  const { data: session } = useSession();
+export default async function Home() {
+  const session = await getServerSession(AuthOption);
+
   return session ? (
     <div className="w-full h-full">
       <div className="text-4xl p-4">Your Projects</div>

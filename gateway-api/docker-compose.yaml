@@ -1,15 +1,18 @@
 services:
   keycloak-db:
     image: postgres:15
+    ports:
+      - "5434:5432"
     container_name: keycloak-db
     environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_DB=${POSTGRES_DB}
     volumes:
       - keycloak-db-data:/var/lib/postgresql/data
     networks:
       - keycloak-network
+
 
   keycloak:
     image: quay.io/keycloak/keycloak:22.0.1
@@ -17,17 +20,19 @@ services:
     environment:
       DB_VENDOR: postgres
       DB_ADDR: keycloak-db
-      DB_DATABASE: keycloak
+      DB_DATABASE: keycloakdb
       DB_USER: keycloak
-      DB_PASSWORD: password
+      DB_PASSWORD: changemeinprod
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
     command: >
-      start-dev
+      start-dev --import-realm
     ports:
       - 8080:8080
     depends_on:
       - keycloak-db
+    volumes:
+      - ./myrealm.json:/opt/keycloak/data/import/myrealm.json
     networks:
       - keycloak-network
 

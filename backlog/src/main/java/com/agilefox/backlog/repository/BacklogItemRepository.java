@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface BacklogItemRepository extends JpaRepository<BacklogItem, Long> {
     public List<BacklogItem> findByProjectId(Long projectId);
+    public List<BacklogItem> findByType_IdAndState_Id(Long typeId, Long stateId);
 }

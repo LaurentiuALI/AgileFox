@@ -1,13 +1,13 @@
 "use server";
 
-import { BacklogItem } from "@/types/BacklogItem";
+import { BacklogItemSchema } from "@/types/BacklogItem";
 import { getIdToken } from "@/util/SessionTokenAccesor";
 
 export async function getAllBacklogItems({
   projectId,
 }: {
-  projectId: number;
-}): Promise<BacklogItem[]> {
+  projectId: number | string;
+}): Promise<(typeof BacklogItemSchema)[]> {
   const idToken = await getIdToken();
 
   if (!idToken) {
@@ -25,11 +25,11 @@ export async function getAllBacklogItems({
         },
       }
     );
+
     const data = await response.json();
-    console.log("🚀 ~ getAllBacklogItems ~ data:", data);
     return data;
   } catch (error) {
-    console.log("🚀 ~ getAllBacklogItems ~ error:", error);
+    console.error("🚀 ~ getAllBacklogItems ~ error:", error);
     return [];
   }
 }

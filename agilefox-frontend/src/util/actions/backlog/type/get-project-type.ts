@@ -6,7 +6,7 @@ import { getIdToken } from "@/util/SessionTokenAccesor";
 export async function getProjectTypes({
   projectId,
 }: {
-  projectId: number;
+  projectId: string;
 }): Promise<Type[] | undefined> {
   const idToken = await getIdToken();
   try {
@@ -20,12 +20,10 @@ export async function getProjectTypes({
         },
       }
     );
-    console.log("🚀 ~ getAllTypes ~ response:", response);
     const data = await response.json();
-    console.log("🚀 ~ data:", data);
     return data;
   } catch (error) {
-    console.log("🚀 ~ error:", error);
+    console.error("🚀 ~ error:", error);
     return undefined;
   }
 }

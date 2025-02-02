@@ -33,6 +33,7 @@ export async function submitBacklogItem(formData: {
       },
       body: JSON.stringify(formData),
     });
+    console.log("🚀 ~ formData:", formData);
 
     if (!response.ok) {
       console.error(

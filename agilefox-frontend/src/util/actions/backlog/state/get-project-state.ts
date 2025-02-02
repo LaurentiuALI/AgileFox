@@ -6,7 +6,7 @@ import { getIdToken } from "@/util/SessionTokenAccesor";
 export async function getProjectStates({
   projectId,
 }: {
-  projectId: number;
+  projectId: string;
 }): Promise<State[] | undefined> {
   const idToken = await getIdToken();
   try {
@@ -21,10 +21,9 @@ export async function getProjectStates({
       }
     );
     const data = await response.json();
-    console.log("🚀 ~ data:", data);
     return data;
   } catch (error) {
-    console.log("🚀 ~ error:", error);
+    console.error("🚀 ~ error:", error);
     return undefined;
   }
 }

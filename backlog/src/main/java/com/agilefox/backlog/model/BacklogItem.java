@@ -11,7 +11,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Table(name = "backlog_item")
 public class BacklogItem {
 
     @Id
@@ -19,12 +18,18 @@ public class BacklogItem {
     private long id;
 
     private String uid;
-
-    private long projectId;
-    private long typeId;
-    private long stateId;
-
     private String title;
     private String description;
+
+    @ManyToOne
+    @JoinColumn(name = "typeId")
+    private Type type;
+
+    @ManyToOne
+    @JoinColumn(name = "stateId")
+    private State state;
+
+    private long projectId;
+
 
 }
