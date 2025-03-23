@@ -1,14 +1,15 @@
 package com.agilefox.backlog.controller;
 
-import com.agilefox.backlog.dto.BacklogItemRequestDTO;
-import com.agilefox.backlog.dto.BacklogItemResponseDTO;
-import com.agilefox.backlog.dto.ScoreResponseDTO;
+import com.agilefox.backlog.dto.BacklogItem.BacklogItemRequestDTO;
+import com.agilefox.backlog.dto.BacklogItem.BacklogItemResponseDTO;
+import com.agilefox.backlog.dto.Card.CheckItem.Score.ScoreResponseDTO;
 import com.agilefox.backlog.service.BacklogItemService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/backlogitem")
@@ -17,17 +18,14 @@ public class BacklogItemController {
 
     private final BacklogItemService backlogItemService;
 
-    @GetMapping
+    @GetMapping("/item")
     @ResponseStatus(HttpStatus.OK)
-//    @PreAuthorize("hasRole('client_admin')")
-    public List<BacklogItemResponseDTO> getBacklogItemsByProjectId(@RequestParam Long projectId) {
-        return backlogItemService.getAllBacklogItemStateTypes(projectId);
-    }
-
-    @GetMapping("/{id}")
-    @ResponseStatus(HttpStatus.OK)
-    public BacklogItemResponseDTO getBacklogItemByProjectIdAndId(@PathVariable Long id, @RequestParam Long projectId) {
-        return backlogItemService.getBacklogItemByProjectAndId(projectId, id);
+    public List<BacklogItemResponseDTO> getBacklogItemsByProjectId(@RequestParam Optional<Long> projectId, @RequestParam Optional<Long> id, @RequestParam Optional<String> username) {
+        System.out.println("Username: " + username);
+        Long project = projectId.orElse(null);
+        Long itemId = id.orElse(null);
+        String user = username.orElse(null);
+        return backlogItemService.getBacklogItems(project, itemId, user);
     }
 
     @GetMapping("/score/{id}")
@@ -37,15 +35,24 @@ public class BacklogItemController {
         return backlogItemService.getBacklogItemScore(id);
     }
 
-    @PostMapping
+    @PostMapping("/item")
     @ResponseStatus(HttpStatus.CREATED)
     public BacklogItemResponseDTO createBacklogItem(@RequestBody BacklogItemRequestDTO requestDTO){
         return backlogItemService.addBacklogItem(requestDTO);
     }
 
-    @DeleteMapping("/{id}")
+    @PatchMapping("/item")
+    @ResponseStatus(HttpStatus.OK)
+    public BacklogItemResponseDTO updateBacklogItem(
+            @RequestParam Long id,
+            @RequestBody BacklogItemRequestDTO requestDTO) {
+        return backlogItemService.updateBacklogItem(id, requestDTO);
+    }
+
+
+    @DeleteMapping("/item")
     @ResponseStatus(HttpStatus.CREATED)
-    public void deleteBacklogItem(@PathVariable Long id){
+    public void deleteBacklogItem(@RequestParam Long id){
         backlogItemService.deleteBacklogItem(id);
     }
 }

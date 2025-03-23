@@ -1,7 +1,7 @@
 package com.agilefox.backlog.service;
 
-import com.agilefox.backlog.dto.TypeRequestDTO;
-import com.agilefox.backlog.dto.TypeResponseDTO;
+import com.agilefox.backlog.dto.BacklogItem.Type.TypeRequestDTO;
+import com.agilefox.backlog.dto.BacklogItem.Type.TypeResponseDTO;
 
 import java.util.List;
 

@@ -1,0 +1,2 @@
+ALTER TABLE backlogitem
+ADD COLUMN username VARCHAR(255);

@@ -1,5 +1,6 @@
 import { BacklogItem } from "@/types/BacklogItem";
 import { Badge } from "../ui/badge";
+import AsigneeSelector from "./AsigneeSelector";
 
 export default function BacklogItemDetails({
   backlogItem,
@@ -11,10 +12,7 @@ export default function BacklogItemDetails({
       <Badge className="m-4 rounded-xl p-2 bg-neutral-600">
         {backlogItem.state.name}
       </Badge>
-      <Badge className="m-4 rounded-xl flex justify-between p-2 bg-neutral-600">
-        <span>Assignee</span>
-        <span>John Doe</span>
-      </Badge>
+      <AsigneeSelector backlogItem={backlogItem} />
       <Badge className="m-4 rounded-xl flex justify-between p-2 bg-neutral-600">
         <span>Epic</span>
         <span>Test epic</span>

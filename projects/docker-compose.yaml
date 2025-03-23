@@ -1,0 +1,84 @@
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:22.0.1
+    container_name: keycloak
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://backlog-db.postgres.database.azure.com:5432/keycloak_db?sslmode=require
+      KC_DB_USERNAME: agilefox_admin
+      KC_DB_PASSWORD: Laurentiu2025
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    command: >
+      start-dev --import-realm --db=postgres
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./myrealm.json:/opt/keycloak/data/import/myrealm.json
+    networks:
+      - agilefox-net
+
+  eureka-server:
+    image: agilefox/eureka-server:latest
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+    networks:
+      - agilefox-net
+
+  backlog-microservice:
+    image: agilefox/backlog-microservice:latest
+    container_name: backlog-microservice
+    environment:
+      SPRING_APPLICATION_NAME: backlog
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: "http://eureka-server:8761/eureka/"
+    ports:
+      - "8081:8080"   # Map internal port 8080 to host port 8081 (adjust as needed)
+    networks:
+      - agilefox-net
+
+  project-microservice:
+    image: agilefox/project-microservice:latest
+    container_name: project-microservice
+    environment:
+      SPRING_APPLICATION_NAME: project
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: "http://eureka-server:8761/eureka/"
+    ports:
+      - "8082:8080"   # Map internal port 8080 to host port 8082
+    networks:
+      - agilefox-net
+
+  user-microservice:
+    image: agilefox/user-microservice:latest
+    container_name: user-microservice
+    environment:
+      SPRING_APPLICATION_NAME: user
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: "http://eureka-server:8761/eureka/"
+    ports:
+      - "8083:8080"   # Map internal port 8080 to host port 8083
+    networks:
+      - agilefox-net
+
+  gateway-api:
+    image: agilefox/gateway-api:latest
+    container_name: gateway-api
+    depends_on:
+      - eureka-server
+      - keycloak
+      - backlog-microservice
+      - project-microservice
+      - user-microservice
+    environment:
+      SPRING_APPLICATION_NAME: gateway-api
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: "http://eureka-server:8761/eureka/"
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: "http://keycloak:8080/realms/agilefox-spring-microservices"
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: "http://keycloak:8080/realms/agilefox-spring-microservices/protocol/openid-connect/certs"
+      SERVER_PORT: "8085"
+    ports:
+      - "8085:8085"
+    networks:
+      - agilefox-net
+
+networks:
+  agilefox-net:
+    driver: bridge

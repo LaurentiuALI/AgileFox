@@ -21,9 +21,9 @@ export default function ProgressState({ id: backlogItemId }: { id: number }) {
     return <div>Loading...</div>;
   }
 
-  const { totalScore, actualScore } = data ?? { totalScore: 1, actualScore: 1 };
+  const { totalScore, actualScore } = data ?? { totalScore: 0, actualScore: 0 };
 
-  const normalizedActualScore = normalizeRange(actualScore, 0, totalScore + 1);
+  const normalizedActualScore = normalizeRange(actualScore, 0, totalScore);
   return (
     <div className="flex items-center gap-4">
       <Play onClick={() => redirect(`item/${backlogItemId}`)} />

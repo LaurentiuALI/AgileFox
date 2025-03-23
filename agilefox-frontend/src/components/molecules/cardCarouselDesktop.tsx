@@ -12,14 +12,17 @@ export default function CardCarouselDesktop({
   projectId: string | number;
   backlogItem: BacklogItem;
 }) {
-  const { data } = useGetCards({ projectId });
-  
+  const { data, isLoading, isError } = useGetCards({ projectId });
+
+  if (isLoading) return <div>Loading...</div>;
+
+  if (isError || !data) return <div>Error...</div>;
   return (
     <div className="w-full h-1/2 ">
       <ScrollArea className="h-full ">
         <div className="h-full border-2 border-orange-500 flex gap-10">
           {data
-            ?.filter(
+            .filter(
               (card) =>
                 card.state.id === backlogItem?.state.id &&
                 card.type.id === backlogItem?.type.id &&
@@ -28,7 +31,6 @@ export default function CardCarouselDesktop({
             .map((card) => (
               <RefinementCard key={card.id} card={card} />
             ))}
-         
         </div>
         <ScrollBar orientation="horizontal" />
       </ScrollArea>

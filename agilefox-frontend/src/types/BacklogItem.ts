@@ -12,14 +12,6 @@ export const BacklogItemSchema = z.object({
     message: "Title must be at least 3 characters.",
   }),
   description: z.string(),
+  username: z.string().optional().nullable(),
 });
 export type BacklogItem = z.infer<typeof BacklogItemSchema>;
-
-// export const backlogItemSchema = z.object({
-//   title: z.string().min(3, {
-//     message: "Title must be at least 3 characters.",
-//   }),
-//   description: z.string(),
-//   type: z.string(),
-//   state: z.string(),
-// });

@@ -8,6 +8,8 @@ CREATE TABLE IF NOT EXISTS state(
     id SERIAL   PRIMARY KEY,
     name        VARCHAR(20),
     description TEXT,
+    typeId      INTEGER NOT NULL REFERENCES type(id) ON DELETE CASCADE,
+    stateOrder  INTEGER NOT NULL,
     projectId   INTEGER
 );
 
@@ -28,8 +30,7 @@ CREATE TABLE IF NOT EXISTS CARD(
     projectId     INTEGER,
     title         VARCHAR(55) NOT NULL,
     purpose       VARCHAR(255),
-    backlogitemId INTEGER  REFERENCES backlogitem ON UPDATE CASCADE ON DELETE CASCADE,
-    isTemplate    BOOLEAN DEFAULT FALSE
+    backlogitemId INTEGER  REFERENCES backlogitem ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS checkitem(

@@ -1,14 +1,12 @@
 package com.agilefox.backlog.controller;
 
-import com.agilefox.backlog.dto.TypeRequestDTO;
-import com.agilefox.backlog.dto.TypeResponseDTO;
+import com.agilefox.backlog.dto.BacklogItem.Type.TypeRequestDTO;
+import com.agilefox.backlog.dto.BacklogItem.Type.TypeResponseDTO;
 import com.agilefox.backlog.service.TypeService;
-import jakarta.ws.rs.QueryParam;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
-import javax.naming.Name;
 import java.util.List;
 
 @RestController

@@ -2,12 +2,6 @@
 
 import { getIdToken } from "@/util/SessionTokenAccesor";
 
-/**
- * Deletes a backlog item from the backend API.
- * @param itemId - The ID of the backlog item to be deleted.
- * @returns A boolean indicating whether the deletion was successful.
- * @throws Error if the user is not authenticated or the request fails.
- */
 export async function deleteBacklogItem(itemId: number): Promise<boolean> {
   const idToken = await getIdToken();
 
@@ -20,7 +14,7 @@ export async function deleteBacklogItem(itemId: number): Promise<boolean> {
 
   try {
     const response = await fetch(
-      `${process.env.BACKEND_URL}/backlogitem/${itemId}`,
+      `${process.env.BACKEND_URL}/backlogitem/item/${itemId}`,
       {
         method: "DELETE",
         headers: {

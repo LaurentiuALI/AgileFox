@@ -1,14 +1,26 @@
-import ProjectsCarousel from "@/components/molecules/projectsCarousel";
+import ProjectsCarousel from "@/components/molecules/project/ProjectCarousel/projectsCarousel";
 import { getServerSession } from "next-auth/next";
 import { AuthOption } from "@/app/api/auth/[...nextauth]/route";
+import AddProject from "@/components/molecules/addProject";
+import AssignedIssueList from "@/components/molecules/assignedIssueList";
+import { canAddProject } from "@/util/roleManagement";
 
 export default async function Home() {
   const session = await getServerSession(AuthOption);
-
   return session ? (
     <div className="w-full h-full">
-      <div className="text-4xl p-4">Your Projects</div>
+      <div className="flex justify-between">
+        <div className="text-4xl p-4">Your Projects</div>
+        {canAddProject(session.user.roles) && <AddProject />}
+      </div>
       <ProjectsCarousel />
+
+      <div className="flex justify-between">
+        <div className="text-4xl p-4">Assigned to me</div>
+      </div>
+      {session.user.username && (
+        <AssignedIssueList username={session.user.username} />
+      )}
     </div>
   ) : (
     <div className="w-full h-full">

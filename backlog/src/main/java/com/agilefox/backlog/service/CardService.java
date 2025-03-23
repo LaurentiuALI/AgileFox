@@ -1,6 +1,8 @@
 package com.agilefox.backlog.service;
 
-import com.agilefox.backlog.dto.*;
+import com.agilefox.backlog.dto.Card.CardRequestDTO;
+import com.agilefox.backlog.dto.Card.CardResponseDTO;
+import com.agilefox.backlog.dto.Card.CheckItem.Score.ScoreResponseDTO;
 
 import java.util.List;
 

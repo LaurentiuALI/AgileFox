@@ -21,14 +21,14 @@ export async function getAllProjects(): Promise<Project[]> {
       },
     });
 
-    // if (!response.ok) {
-    //   throw new Error(`Failed to fetch projects: ${response.statusText}`);
-    // }
+    if (!response.ok) {
+      throw new Error(`Failed to fetch projects: ${response.statusText}`);
+    }
 
     const data = await response.json();
     return data;
   } catch (error) {
     console.error("Error fetching projects", error);
-    return [];
+    throw error;
   }
 }

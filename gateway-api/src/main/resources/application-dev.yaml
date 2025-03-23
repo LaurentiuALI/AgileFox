@@ -1,0 +1,62 @@
+eureka:
+  instance:
+    prefer-ip-address: true
+    hostname: gateway-api-microservice
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+spring:
+  application:
+    name: gateway-api
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: false
+          lower-case-service-id: true
+      routes:
+        - id: project-routes
+          uri: lb://PROJECT
+          predicates:
+            - Path=/project/**
+          filters:
+            - PrefixPath=/api
+        - id: backlog-routes
+          uri: lb://BACKLOG
+          predicates:
+            - Path=/state/**,/type/**,/backlogitem/**,/card/**,/checkitem/**
+          filters:
+            - PrefixPath=/api
+        - id: user-routes
+          uri: lb://USER
+          predicates:
+            - Path=/user/**
+          filters:
+            - PrefixPath=/api
+        - id: agilestudio-routes
+          uri: lb://AGILESTUDIO
+          predicates:
+            - Path=/agilestudio/**
+          filters:
+            - PrefixPath=/api
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8080/realms/agilefox-spring-microservices
+          jwk-set-uri: http://localhost:8080/realms/agilefox-spring-microservices/protocol/openid-connect/certs
+
+jwt:
+  auth:
+    converter:
+      principle-attribute: preferred_username
+      resource-id: spring-client
+
+logging:
+  level:
+    org.springframework.security: DEBUG
+    org.springframework.security.oauth2: DEBUG
+server:
+  port: 8085

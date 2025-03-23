@@ -31,5 +31,6 @@ public class BacklogItem {
 
     private long projectId;
 
+    private String username;
 
 }

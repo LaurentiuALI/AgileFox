@@ -6,8 +6,8 @@ import { getIdToken } from "@/util/SessionTokenAccesor";
 export async function getProjectStates({
   projectId,
 }: {
-  projectId: string;
-}): Promise<State[] | undefined> {
+  projectId: string | number;
+}): Promise<State[]> {
   const idToken = await getIdToken();
   try {
     const response = await fetch(
@@ -24,6 +24,6 @@ export async function getProjectStates({
     return data;
   } catch (error) {
     console.error("🚀 ~ error:", error);
-    return undefined;
+    throw new Error("Failed to fetch project states");
   }
 }

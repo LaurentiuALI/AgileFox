@@ -1,8 +1,8 @@
 package com.agilefox.backlog.service.impl;
 
 import com.agilefox.backlog.client.ProjectClient;
-import com.agilefox.backlog.dto.TypeRequestDTO;
-import com.agilefox.backlog.dto.TypeResponseDTO;
+import com.agilefox.backlog.dto.BacklogItem.Type.TypeRequestDTO;
+import com.agilefox.backlog.dto.BacklogItem.Type.TypeResponseDTO;
 import com.agilefox.backlog.model.Type;
 import com.agilefox.backlog.repository.TypeRepository;
 import com.agilefox.backlog.service.TypeService;

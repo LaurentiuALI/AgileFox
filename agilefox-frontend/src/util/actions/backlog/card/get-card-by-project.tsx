@@ -26,16 +26,10 @@ export async function getCardsOfProject({
       }
     );
 
-    if (!response.ok) {
-      console.error("Error fetching card:", response.statusText);
-      return undefined;
-    }
-
     const data = await response.json();
-    console.log("🚀 ~ data:", data);
     return data.map((card: Card) => CardSchema.parse(card)); // Validate and return the parsed object
   } catch (error) {
     console.error("Error in getCardsOfProject:", error);
-    return undefined;
+    throw new Error("Failed to fetch cards of project");
   }
 }

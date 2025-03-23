@@ -15,8 +15,8 @@ export async function getAccessToken() {
 export async function getIdToken() {
   const session = await getServerSession(AuthOption);
 
-  if (session && session.user.id_token !== undefined) {
-    const idTokenDecrypted = decrypt(session.user.id_token);
+  if (session && session.user.access_token !== undefined) {
+    const idTokenDecrypted = decrypt(session.user.access_token);
     return idTokenDecrypted;
   }
   return null;

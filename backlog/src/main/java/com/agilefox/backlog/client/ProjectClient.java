@@ -1,7 +1,7 @@
 package com.agilefox.backlog.client;
 
 import com.agilefox.backlog.config.AuthFeignInterceptor;
-import com.agilefox.backlog.dto.ProjectResponseDTO;
+import com.agilefox.backlog.dto.Project.ProjectResponseDTO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;

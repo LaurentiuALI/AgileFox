@@ -1,18 +1,22 @@
 package com.agilefox.backlog.service.impl;
 
-import com.agilefox.backlog.dto.CardRequestDTO;
-import com.agilefox.backlog.dto.CardResponseDTO;
-import com.agilefox.backlog.dto.ScoreResponseDTO;
-import com.agilefox.backlog.exceptions.ResourceNotFoundException;
+import com.agilefox.backlog.dto.BacklogItem.BacklogItemResponseDTO;
+import com.agilefox.backlog.dto.BacklogItem.State.StateResponseDTO;
+import com.agilefox.backlog.dto.BacklogItem.Type.TypeResponseDTO;
+import com.agilefox.backlog.dto.Card.CardRequestDTO;
+import com.agilefox.backlog.dto.Card.CardResponseDTO;
+import com.agilefox.backlog.dto.Card.CheckItem.Score.ScoreResponseDTO;
 import com.agilefox.backlog.model.*;
 import com.agilefox.backlog.repository.*;
 import com.agilefox.backlog.service.CardService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -25,6 +29,7 @@ public class CardServiceImpl implements CardService {
     private final TypeRepository typeRepository;
     private final StateRepository stateRepository;
     private final BacklogItemRepository backlogItemRepository;
+    private final ModelMapper modelMapper;
 
     @Override
     public List<CardResponseDTO> getAllCards() {
@@ -86,25 +91,22 @@ public class CardServiceImpl implements CardService {
         List<CheckItem> checkItems = checkItemRepository.findCheckItemsByCardId(cardId);
 
         checkItems.forEach(checkItem -> { log.info("CheckItem: {}", checkItem); });
-        int totalScore = 0;
         int actualScore = 0;
 
         for(CheckItem checkItem : checkItems){
             if(checkItem.isChecked()){
-                totalScore++;
                 actualScore++;
-            } else {
-                totalScore++;
             }
         }
 
-        return new ScoreResponseDTO(totalScore, actualScore);
+        return new ScoreResponseDTO(checkItems.size(), actualScore);
     }
 
     @Transactional
     @Override
     public CardResponseDTO addCard(CardRequestDTO cardRequest) {
         log.info("Adding new card with title: {}", cardRequest.getTitle());
+        log.info("Adding card with information: {}", cardRequest);
         Card card = convertToEntity(cardRequest);
         Card savedCard = cardRepository.save(card);
 
@@ -166,9 +168,9 @@ public class CardServiceImpl implements CardService {
         return new CardResponseDTO(
                 card.getId(),
                 card.getProjectId(),
-                card.getType(),
-                card.getState(),
-                card.getBacklogitem(),
+                modelMapper.map(card.getType(), TypeResponseDTO.class),
+                modelMapper.map(card.getState(), StateResponseDTO.class),
+                Objects.nonNull(card.getBacklogitem()) ? modelMapper.map( card.getBacklogitem(), BacklogItemResponseDTO.class) : null,
                 card.getTitle(),
                 card.getPurpose()
         );

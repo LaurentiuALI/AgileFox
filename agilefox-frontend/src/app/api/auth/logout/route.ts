@@ -1,5 +1,6 @@
 import { getIdToken } from "@/util/SessionTokenAccesor";
 import { getServerSession } from "next-auth";
+import { redirect } from "next/navigation";
 
 export async function GET() {
   const session = await getServerSession();
@@ -15,5 +16,6 @@ export async function GET() {
       return new Response("Error during Keycloak logout", { status: 500 });
     }
   }
+  redirect("/");
   return new Response("Logged out", { status: 200 });
 }

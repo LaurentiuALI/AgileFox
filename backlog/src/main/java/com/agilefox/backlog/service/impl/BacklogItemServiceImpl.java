@@ -1,23 +1,36 @@
 package com.agilefox.backlog.service.impl;
 
 import com.agilefox.backlog.client.ProjectClient;
-import com.agilefox.backlog.dto.*;
+import com.agilefox.backlog.dto.BacklogItem.BacklogItemRequestDTO;
+import com.agilefox.backlog.dto.BacklogItem.BacklogItemResponseDTO;
+import com.agilefox.backlog.dto.BacklogItem.State.StateResponseDTO;
+import com.agilefox.backlog.dto.BacklogItem.Type.TypeResponseDTO;
+import com.agilefox.backlog.dto.Card.CheckItem.Score.ScoreResponseDTO;
+import com.agilefox.backlog.dto.Project.ProjectResponseDTO;
 import com.agilefox.backlog.exceptions.ResourceNotFoundException;
-import com.agilefox.backlog.model.*;
-import com.agilefox.backlog.repository.*;
+import com.agilefox.backlog.model.BacklogItem;
+import com.agilefox.backlog.model.Card;
+import com.agilefox.backlog.model.CheckItem;
+import com.agilefox.backlog.model.State;
+import com.agilefox.backlog.model.Type;
+import com.agilefox.backlog.repository.BacklogItemRepository;
+import com.agilefox.backlog.repository.CardRepository;
+import com.agilefox.backlog.repository.CheckItemRepository;
+import com.agilefox.backlog.repository.StateRepository;
+import com.agilefox.backlog.repository.TypeRepository;
 import com.agilefox.backlog.service.BacklogItemService;
 import com.agilefox.backlog.service.CardService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@RequiredArgsConstructor
 @Slf4j
+@RequiredArgsConstructor
 @Service
 public class BacklogItemServiceImpl implements BacklogItemService {
 
@@ -28,139 +41,119 @@ public class BacklogItemServiceImpl implements BacklogItemService {
     private final CardService cardService;
     private final ProjectClient projectClient;
     private final CheckItemRepository checkItemRepository;
+    private final ModelMapper modelMapper;
 
     @Override
-    public List<BacklogItemResponseDTO> getAllBacklogItems() {
-        log.info("Query for Backlog items");
-        return backlogItemRepository.findAll().stream()
-                .map(backlogItem -> new BacklogItemResponseDTO(
-                        backlogItem.getId(),
-                        backlogItem.getUid(),
-                        backlogItem.getProjectId(),
-                        backlogItem.getType(),
-                        backlogItem.getState(),
-                        backlogItem.getTitle(),
-                        backlogItem.getDescription()))
-                .collect(Collectors.toList());
+    public List<BacklogItemResponseDTO> getBacklogItems(Long projectId, Long id, String username) {
+        log.info("Querying for backlog items for project {}", projectId);
+        log.info("Username {}", username);
+
+        return backlogItemRepository.findAll()
+                .stream()
+                .filter(item -> projectId == null || projectId.equals(item.getProjectId()))
+                .filter(item -> id == null || item.getId() == id)
+                .filter(item -> username == null || username.equals(item.getUsername()))
+                .map(item -> modelMapper.map(item, BacklogItemResponseDTO.class)).toList();
     }
+
 
     @Override
     public List<BacklogItemResponseDTO> getAllBacklogItemStateTypes(Long projectId) {
-        log.info("START - Query for Backlog item state types");
+        log.info("START - Query for Backlog item state types for projectId: {}", projectId);
         List<BacklogItem> backlogItems = backlogItemRepository.findByProjectId(projectId);
-        List<BacklogItemResponseDTO> backlogItemStateTypes = new ArrayList<>();
 
-        for (BacklogItem backlogItem : backlogItems) {
-            State state = stateRepository.findById(backlogItem.getState().getId()).orElse(null);
-            Type type = typeRepository.findById(backlogItem.getType().getId()).orElse(null);
-
-            if (state != null && type != null) {
-                backlogItemStateTypes.add(new BacklogItemResponseDTO(
-                        backlogItem.getId(),
-                        backlogItem.getUid(),
-                        backlogItem.getProjectId(),
-                        type,
-                        state,
-                        backlogItem.getTitle(),
-                        backlogItem.getDescription()));
-            } else {
-                log.error("State or type not found for backlogItem: {}", backlogItem);
-                throw new ResourceNotFoundException("State or type not found");
-            }
-        }
-        log.info("END - Query for Backlog item state types");
-        return backlogItemStateTypes;
+        return backlogItems.stream().map(item -> {
+            // Refresh state and type using orElseThrow for better error handling
+            State state = stateRepository.findById(item.getState().getId())
+                    .orElseThrow(() -> new ResourceNotFoundException("State not found for backlogItem: " + item.getId()));
+            Type type = typeRepository.findById(item.getType().getId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Type not found for backlogItem: " + item.getId()));
+            // Optionally update the backlog item (if needed) or pass to DTO converter
+            item.setState(state);
+            item.setType(type);
+            return convertToResponseDTO(item);
+        }).collect(Collectors.toList());
     }
 
     @Override
     public BacklogItemResponseDTO getBacklogItemByProjectAndId(Long projectId, Long backlogItemId) {
-        log.info("START - Query for Backlog item state types");
-        List<BacklogItem> backlogItems = backlogItemRepository.findByProjectId(projectId);
-        for(BacklogItem backlogItem: backlogItems) {
-            if (backlogItem.getId() == backlogItemId) {
-                State state = stateRepository.findById(backlogItem.getState().getId()).orElse(null);
-                Type type = typeRepository.findById(backlogItem.getType().getId()).orElse(null);
-
-                if (state != null && type != null) {
-                    return new BacklogItemResponseDTO(backlogItemId, backlogItem.getUid(), projectId, type, state, backlogItem.getTitle(), backlogItem.getDescription());
-                } else {
-                    log.error("State or type not found for backlogItem: {}", backlogItem);
-                    throw new ResourceNotFoundException("State or type not found");
-                }
-            }
-        }
-        log.error(" backlogItem with id {} not found", backlogItemId);
-        throw new ResourceNotFoundException("backlogItem with id " + backlogItemId + " not found");
+        log.info("Querying for Backlog item with projectId: {} and backlogItemId: {}", projectId, backlogItemId);
+        // Assuming you add a custom repository method findByProjectIdAndId
+        BacklogItem backlogItem = backlogItemRepository.findByProjectIdAndId(projectId, backlogItemId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "BacklogItem with id " + backlogItemId + " not found in project " + projectId));
+        return convertToResponseDTO(backlogItem);
     }
 
     @Override
     public ScoreResponseDTO getBacklogItemScore(long backlogItemId) {
-        log.info("START - Query for Backlog item with id {}", backlogItemId);
-        BacklogItem backlogItem = backlogItemRepository.findById(backlogItemId).orElseThrow( () -> new ResourceNotFoundException("BacklogItem not found"));
+        log.info("START - Query for Backlog item score with id {}", backlogItemId);
 
-        List<Card> cardsOfBacklogItem = cardRepository.findByType_IdAndState_Id(backlogItem.getType().getId(), backlogItem.getState().getId());
+        BacklogItem backlogItem = backlogItemRepository.findById(backlogItemId)
+                .orElseThrow(() -> new ResourceNotFoundException("BacklogItem not found with id " + backlogItemId));
+        List<Card> cards = cardRepository.findByBacklogitem_Id(backlogItemId);
+
 
         int totalScore = 0;
         int actualScore = 0;
-
-        for (Card card : cardsOfBacklogItem) {
-            ScoreResponseDTO scoreResponseDTO = cardService.getCardScore(card.getId());
-            totalScore += scoreResponseDTO.getTotalScore();
-            actualScore += scoreResponseDTO.getActualScore();
+        // Ensure you call cardService.getCardScore only once per card
+        for (Card card : cards) {
+            ScoreResponseDTO score = cardService.getCardScore(card.getId());
+            totalScore += score.getTotalScore();
+            actualScore += score.getActualScore();
         }
-
         return new ScoreResponseDTO(totalScore, actualScore);
     }
 
     @Transactional
     @Override
-    public BacklogItemResponseDTO addBacklogItem(BacklogItemRequestDTO backlogItemRequest) {
-        log.info("START - Adding backlog item");
+    public BacklogItemResponseDTO addBacklogItem(BacklogItemRequestDTO requestDTO) {
+        log.info("START - Adding backlog item for projectId: {}", requestDTO.getProjectId());
 
-        log.info("Querying for project existence with id {}", backlogItemRequest.getProjectId());
-        ProjectResponseDTO projectResponse;
-
-        try{
-            projectResponse = projectClient.getProjectById(backlogItemRequest.getProjectId());
-        } catch (Exception e) {
-            log.error(e.getMessage());
-            throw new RuntimeException(e);
-        }
+        log.info("Adding backlog item with information: {}", requestDTO);
+        // Validate project existence
+        ProjectResponseDTO projectResponse = projectClient.getProjectById(requestDTO.getProjectId());
         if (projectResponse == null) {
-            log.error("Project with id {} not found", backlogItemRequest.getProjectId());
-            throw new ResourceNotFoundException("Project with id " + backlogItemRequest.getProjectId() + " not found");
+            log.error("Project with id {} not found", requestDTO.getProjectId());
+            throw new ResourceNotFoundException("Project with id " + requestDTO.getProjectId() + " not found");
         }
 
-        Type type = typeRepository.findById(backlogItemRequest.getTypeId()).orElse(null);
-        if (type == null) {
-            log.error("Type with id {} not found", backlogItemRequest.getTypeId());
-            throw new ResourceNotFoundException("Type with id " + backlogItemRequest.getTypeId() + " not found");
-        }
+        // Validate and retrieve type and state using orElseThrow
+        Type type = typeRepository.findById(requestDTO.getTypeId())
+                .orElseThrow(() -> new ResourceNotFoundException("Type with id " + requestDTO.getTypeId() + " not found"));
+        State state = stateRepository.findById(requestDTO.getStateId())
+                .orElseThrow(() -> new ResourceNotFoundException("State with id " + requestDTO.getStateId() + " not found"));
 
-        State state = stateRepository.findById(backlogItemRequest.getStateId()).orElse(null);
-        if (state == null) {
-            log.error("State with id {} not found", backlogItemRequest.getStateId());
-            throw new ResourceNotFoundException("State with id " + backlogItemRequest.getStateId() + " not found");
-        }
-
+        // Create and save BacklogItem to generate an ID
         BacklogItem backlogItem = BacklogItem.builder()
-                .projectId(backlogItemRequest.getProjectId())
+                .projectId(requestDTO.getProjectId())
                 .type(type)
                 .state(state)
-                .title(backlogItemRequest.getTitle())
-                .description(backlogItemRequest.getDescription())
+                .title(requestDTO.getTitle())
+                .description(requestDTO.getDescription())
                 .build();
+        backlogItem = backlogItemRepository.save(backlogItem);
 
-        backlogItemRepository.save(backlogItem);
-
+        // Update UID based on project abbreviation and generated ID
         backlogItem.setUid(projectResponse.getAbbrev() + "-" + backlogItem.getId());
-        backlogItemRepository.save(backlogItem);
+        backlogItem = backlogItemRepository.save(backlogItem);
 
-        List<Card> templateCards = cardRepository.findByType_IdAndState_Id(backlogItem.getType().getId(), backlogItem.getState().getId()).stream().filter( card -> card.getBacklogitem() == null).toList();
+        // Copy template cards (only those not already assigned to a backlog item)
+        associateTemplateCards(backlogItem);
 
-        for (Card card : templateCards) {
-            log.info("START making copy for card {}", card);
+        log.info("END - Added backlog item with id {}", backlogItem.getId());
+        return convertToResponseDTO(backlogItem);
+    }
 
+    private void associateTemplateCards(BacklogItem backlogItem) {
+        List<Card> templateCards = cardRepository.findByType_IdAndState_Id(
+                        backlogItem.getType().getId(), backlogItem.getState().getId())
+                .stream()
+                .filter(card -> card.getBacklogitem() == null)
+                .toList();
+
+        templateCards.forEach(card -> {
+            log.info("Copying card template: {}", card);
             Card newCard = Card.builder()
                     .projectId(card.getProjectId())
                     .type(card.getType())
@@ -169,81 +162,97 @@ public class BacklogItemServiceImpl implements BacklogItemService {
                     .title(card.getTitle())
                     .purpose(card.getPurpose())
                     .build();
-            log.info("END making copy for card {}", card);
-            log.info("copy for card is {}", newCard);
-            cardRepository.save(newCard);
-
-            log.info("checkitems are {}", card.getCheckItemList());
-            for(CheckItem checkitem: card.getCheckItemList()){
+            Card savedCard = cardRepository.save(newCard);
+            card.getCheckItemList().forEach(checkItem -> {
                 CheckItem newCheckItem = CheckItem.builder()
                         .checked(false)
-                        .information(checkitem.getInformation())
-                        .card(newCard)
+                        .information(checkItem.getInformation())
+                        .card(savedCard)
                         .build();
                 checkItemRepository.save(newCheckItem);
-            }
-
-            log.info("END saving copy for card {}", newCard);
-        }
-
-
-
-        log.info("END - Adding backlog item {}", backlogItemRequest);
-        return new BacklogItemResponseDTO(
-                backlogItem.getId(),
-                backlogItem.getUid(),
-                backlogItem.getProjectId(),
-                backlogItem.getType(),
-                backlogItem.getState(),
-                backlogItem.getTitle(),
-                backlogItem.getDescription());
+            });
+        });
     }
 
     @Override
-    public BacklogItemResponseDTO updateBacklogItem(Long id, BacklogItemRequestDTO backlogItemRequestDTO) {
+    public BacklogItemResponseDTO updateBacklogItem(Long id, BacklogItemRequestDTO requestDTO) {
         log.info("START - Updating backlog item with id {}", id);
 
         BacklogItem backlogItem = backlogItemRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Backlog item with id " + id + " not found"));
 
-        Type type = typeRepository.findById(backlogItemRequestDTO.getTypeId()).orElse(null);
-        if (type == null) {
-            log.error("Type with id {} not found", backlogItemRequestDTO.getTypeId());
-            throw new ResourceNotFoundException("Type with id " + backlogItemRequestDTO.getTypeId() + " not found");
+        // Update UID if provided
+        if (requestDTO.getUid() != null) {
+            backlogItem.setUid(requestDTO.getUid());
         }
 
-        State state = stateRepository.findById(backlogItemRequestDTO.getStateId()).orElse(null);
-        if (state == null) {
-            log.error("State with id {} not found", backlogItemRequestDTO.getStateId());
-            throw new ResourceNotFoundException("State with id " + backlogItemRequestDTO.getStateId() + " not found");
+        // Update projectId if provided (assuming it can be changed)
+        if (requestDTO.getProjectId() > 0) {
+            backlogItem.setProjectId(requestDTO.getProjectId());
         }
 
-        backlogItem.setUid(backlogItemRequestDTO.getUid());
-        backlogItem.setProjectId(backlogItemRequestDTO.getProjectId());
-        backlogItem.setType(type);
-        backlogItem.setState(state);
-        backlogItem.setTitle(backlogItemRequestDTO.getTitle());
-        backlogItem.setDescription(backlogItemRequestDTO.getDescription());
+        // Update type if provided
+        if (requestDTO.getTypeId() > 0) {
+            Type type = typeRepository.findById(requestDTO.getTypeId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Type with id " + requestDTO.getTypeId() + " not found"));
+            backlogItem.setType(type);
+        }
 
-        backlogItemRepository.save(backlogItem);
-        log.info("END - Updating backlog item {}", backlogItem);
-        return new BacklogItemResponseDTO(
-                backlogItem.getId(),
-                backlogItem.getUid(),
-                backlogItem.getProjectId(),
-                backlogItem.getType(),
-                backlogItem.getState(),
-                backlogItem.getTitle(),
-                backlogItem.getDescription());
+        // Check if state update is needed
+        if (requestDTO.getStateId() > 0 && backlogItem.getState().getId() != requestDTO.getStateId()) {
+            State state = stateRepository.findById(requestDTO.getStateId())
+                    .orElseThrow(() -> new ResourceNotFoundException("State with id " + requestDTO.getStateId() + " not found"));
+
+            backlogItem.setState(state);
+
+            List<Card> associatedCards = cardRepository.findByBacklogitem_Id(backlogItem.getId());
+            cardRepository.deleteAll(associatedCards);
+
+            associateTemplateCards(backlogItem);
+        }
+
+        // Update title if provided
+        if (requestDTO.getTitle() != null) {
+            backlogItem.setTitle(requestDTO.getTitle());
+        }
+
+        // Update description if provided
+        if (requestDTO.getDescription() != null) {
+            backlogItem.setDescription(requestDTO.getDescription());
+        }
+
+        // Update username if provided
+        if (requestDTO.getUsername() != null) {
+            backlogItem.setUsername(requestDTO.getUsername());
+        }
+
+        backlogItem = backlogItemRepository.save(backlogItem);
+
+        log.info("END - Updated backlog item with id {}", backlogItem.getId());
+        return convertToResponseDTO(backlogItem);
     }
+
 
     @Override
     public void deleteBacklogItem(Long id) {
         log.info("START - Deleting backlog item with id {}", id);
         BacklogItem backlogItem = backlogItemRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Backlog item with id " + id + " not found"));
-
         backlogItemRepository.delete(backlogItem);
-        log.info("END - Deleting backlog item {}", id);
+        log.info("END - Deleted backlog item with id {}", id);
+    }
+
+    // Helper method to convert BacklogItem to its ResponseDTO using ModelMapper
+    private BacklogItemResponseDTO convertToResponseDTO(BacklogItem item) {
+        return new BacklogItemResponseDTO(
+                item.getId(),
+                item.getUid(),
+                item.getProjectId(),
+                modelMapper.map(item.getType(), TypeResponseDTO.class),
+                modelMapper.map(item.getState(), StateResponseDTO.class),
+                item.getTitle(),
+                item.getDescription(),
+                item.getUsername()
+        );
     }
 }

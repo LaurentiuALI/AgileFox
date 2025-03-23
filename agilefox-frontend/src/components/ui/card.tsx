@@ -14,7 +14,6 @@ const Card = React.forwardRef<
     )}
     {...props}
   >
-    <div className="h-full w-3 bg-gradient-to-b from-orange-600 to-orange-400 rounded-l-sm bg-primary absolute" />
     {props.children}
   </div>
 ));

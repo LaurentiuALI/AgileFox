@@ -32,7 +32,7 @@ export default function AddTypeDialog({
 
   return (
     <Dialog>
-      <DialogTrigger className="flex justify-center items-center">
+      <DialogTrigger asChild className="flex justify-center items-center">
         <Button className="ml-4 rounded-xl">
           <PlusCircle className="text-white" /> Add Type{" "}
         </Button>

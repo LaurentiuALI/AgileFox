@@ -8,6 +8,6 @@ export function useGetBacklogItemScore({
 }) {
   return useQuery({
     queryFn: () => getBacklogItemScore({ backlogItemId }),
-    queryKey: ["backlgoItemScore"],
+    queryKey: ["backlogItemScore", backlogItemId],
   });
 }

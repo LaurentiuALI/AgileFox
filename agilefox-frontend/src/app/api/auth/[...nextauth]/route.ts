@@ -36,6 +36,7 @@ async function refreshAccessToken(token: JWT): Promise<JWT> {
     expires_at: Math.floor(Date.now() / 1000) + refreshToken.expires_in,
     refresh_token: refreshToken.refresh_token ?? token.refresh_token,
     roles: roles, // Add roles to the token
+    username: decoded.preferred_username,
   };
 }
 
@@ -70,6 +71,7 @@ export const AuthOption: NextAuthOptions = {
           expires_at: account.expires_at,
           refresh_token: account.refresh_token,
           roles: roles, // Store roles in the token
+          username: decoded.preferred_username,
         };
       } else if (token.expires_at && nowTimeStamp < token.expires_at) {
         // If the token is still valid, keep the existing roles
@@ -91,6 +93,7 @@ export const AuthOption: NextAuthOptions = {
       session.user.id_token = encrypt(token.id_token as string);
       session.user.roles = token.roles; // Add roles to the session
       session.user.error = token.error;
+      session.user.username = token.username;
       return session;
     },
   },

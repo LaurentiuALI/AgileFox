@@ -29,18 +29,28 @@ import { getProjectStates } from "@/util/actions/backlog/state/get-project-state
 import { submitBacklogItem } from "@/util/actions/backlog/backlogItem/post-backlogItem";
 
 export function BacklogItemForm({ projectId }: { projectId: number }) {
-  const [type, setType] = useState<Type[] | undefined>([]);
-  const [state, setState] = useState<State[] | undefined>([]);
+  const [types, setTypes] = useState<Type[]>([]);
+  const [states, setStates] = useState<State[]>([]);
+  const [selectedType, setSelectedType] = useState<number | undefined>();
+  const [filteredStates, setFilteredStates] = useState<State[]>([]);
 
   useEffect(() => {
     async function fetchData() {
-      const typeResult = await getProjectTypes({ projectId: projectId });
-      setType(typeResult);
-      const stateResult = await getProjectStates({ projectId: projectId });
-      setState(stateResult);
+      const typeResult = await getProjectTypes({ projectId });
+      setTypes(typeResult);
+      const stateResult = await getProjectStates({ projectId });
+      setStates(stateResult);
     }
     fetchData();
-  }, []); // Empty dependency array ensures this runs only once when the component mounts
+  }, [projectId]); // Fetch data when projectId changes
+
+  useEffect(() => {
+    if (selectedType !== undefined) {
+      setFilteredStates(states.filter((s) => s.typeId === selectedType));
+    } else {
+      setFilteredStates([]); // Reset if no type is selected
+    }
+  }, [selectedType, states]);
 
   const form = useForm<z.infer<typeof backlogItemSchema>>({
     resolver: zodResolver(backlogItemSchema),
@@ -51,14 +61,19 @@ export function BacklogItemForm({ projectId }: { projectId: number }) {
   });
 
   function onSubmit(values: z.infer<typeof backlogItemSchema>) {
-    if (type === undefined || state === undefined) {
-      return;
-    }
+    if (!types.length || !states.length) return;
+
+    const selectedTypeObj = types.find((t) => t.name === values.type);
+    const selectedStateObj = filteredStates.find(
+      (s) => s.name === values.state
+    );
+
+    if (!selectedTypeObj || !selectedStateObj) return;
 
     submitBacklogItem({
-      projectId: projectId,
-      typeId: type.filter((t) => t.name === values.type)[0].id,
-      stateId: state.filter((s) => s.name === values.state)[0].id,
+      projectId,
+      typeId: selectedTypeObj.id,
+      stateId: selectedStateObj.id,
       title: values.title,
       description: values.description,
     });
@@ -104,8 +119,10 @@ export function BacklogItemForm({ projectId }: { projectId: number }) {
             <FormItem>
               <FormLabel className="text-lg font-semibold">Type</FormLabel>
               <Select
-                onValueChange={field.onChange}
-                defaultValue={field.value}
+                onValueChange={(value) => {
+                  field.onChange(value);
+                  setSelectedType(types.find((t) => t.name === value)?.id);
+                }}
                 value={field.value}
               >
                 <FormControl>
@@ -113,10 +130,10 @@ export function BacklogItemForm({ projectId }: { projectId: number }) {
                     <SelectValue placeholder="Select a type" />
                   </SelectTrigger>
                 </FormControl>
-                <SelectContent>
-                  {type?.map((type) => (
+                <SelectContent className="bg-neutral-900">
+                  {types.map((type) => (
                     <SelectItem key={type.id} value={type.name}>
-                      {type.name}
+                      {type.id + " " + type.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -125,26 +142,24 @@ export function BacklogItemForm({ projectId }: { projectId: number }) {
             </FormItem>
           )}
         />
+
+        {/* State Select */}
         <FormField
           control={form.control}
           name="state"
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-lg font-semibold">State</FormLabel>
-              <Select
-                onValueChange={field.onChange}
-                defaultValue={field.value}
-                value={field.value}
-              >
+              <Select onValueChange={field.onChange} value={field.value}>
                 <FormControl>
                   <SelectTrigger className="w-[180px]">
                     <SelectValue placeholder="Select a state" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {state?.map((state) => (
+                  {filteredStates.map((state) => (
                     <SelectItem key={state.id} value={state.name}>
-                      {state.name}
+                      {state.id + " " + state.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -153,9 +168,8 @@ export function BacklogItemForm({ projectId }: { projectId: number }) {
             </FormItem>
           )}
         />
-        {/* <div className="flex justify-center items-center"> */}
+
         <Button type="submit">Submit</Button>
-        {/* </div> */}
       </form>
     </Form>
   );

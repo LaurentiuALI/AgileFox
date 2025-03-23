@@ -1,15 +1,25 @@
 package com.agilefox.backlog.service.impl;
 
-import com.agilefox.backlog.dto.CheckItemRequestDTO;
-import com.agilefox.backlog.dto.CheckItemResponseDTO;
+import com.agilefox.backlog.dto.BacklogItem.BacklogItemRequestDTO;
+import com.agilefox.backlog.dto.BacklogItem.BacklogItemResponseDTO;
+import com.agilefox.backlog.dto.BacklogItem.State.StateResponseDTO;
+import com.agilefox.backlog.dto.Card.CheckItem.CheckItemRequestDTO;
+import com.agilefox.backlog.dto.Card.CheckItem.CheckItemResponseDTO;
+import com.agilefox.backlog.dto.Card.CheckItem.Score.ScoreResponseDTO;
+import com.agilefox.backlog.model.BacklogItem;
 import com.agilefox.backlog.model.Card;
 import com.agilefox.backlog.model.CheckItem;
+import com.agilefox.backlog.repository.BacklogItemRepository;
 import com.agilefox.backlog.repository.CardRepository;
 import com.agilefox.backlog.repository.CheckItemRepository;
+import com.agilefox.backlog.service.BacklogItemService;
+import com.agilefox.backlog.service.CardService;
 import com.agilefox.backlog.service.CheckItemService;
+import com.agilefox.backlog.service.StateService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -23,6 +33,11 @@ public class CheckItemServiceImpl implements CheckItemService {
 
     private final CheckItemRepository checkItemRepository;
     private final CardRepository cardRepository;
+    private final CardService cardService;
+    private final StateService stateService;
+    private final BacklogItemRepository backlogItemRepository;
+    private final BacklogItemService backlogItemService;
+    private final ModelMapper modelMapper;
 
     @Override
     public List<CheckItemResponseDTO> getAllCheckItems() {
@@ -67,6 +82,28 @@ public class CheckItemServiceImpl implements CheckItemService {
 
         checkItem.setChecked(!checkItem.isChecked());
 
+
+        BacklogItemRequestDTO backlogItem = modelMapper.map(checkItem.getCard().getBacklogitem(), BacklogItemRequestDTO.class);
+        // We need to check if the checkitems completes the state
+        List<Card> cards = cardRepository.findByBacklogitem_Id(checkItem.getCard().getBacklogitem().getId());
+
+        boolean isDone = true;
+        for(Card card : cards) {
+            ScoreResponseDTO score = cardService.getCardScore(card.getId());
+            if(score.getActualScore() != score.getTotalScore()){
+                isDone = false;
+            }
+        }
+
+        if(isDone){
+            StateResponseDTO nextState = stateService.getNextStateOfType(backlogItem.getProjectId(), backlogItem.getTypeId(), backlogItem.getStateId());
+
+            backlogItem.setStateId(nextState.getId());
+
+
+            backlogItemService.updateBacklogItem(backlogItem.getId(), backlogItem);
+        }
+
         checkItemRepository.save(checkItem);
         return convertToResponseDTO(checkItem);
     }
@@ -84,7 +121,7 @@ public class CheckItemServiceImpl implements CheckItemService {
         if(checkItem.getCard().getBacklogitem() == null){
             Long typeId = checkItem.getCard().getType().getId();
             long stateId = checkItem.getCard().getState().getId();
-            List<Card> relevantCards = cardRepository.findByType_IdAndState_Id(typeId, stateId).stream()
+            List<Card> relevantCards = cardRepository.findByType_IdAndState_IdAndTitle(typeId, stateId, checkItem.getCard().getTitle()).stream()
                     .filter(card -> Objects.nonNull(card.getBacklogitem()))
                     .toList();
 

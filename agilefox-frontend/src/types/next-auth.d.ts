@@ -10,6 +10,7 @@ declare module "next-auth" {
       expires_at?: number;
       error?: string;
       roles?: string[];
+      username?: string;
     } & DefaultSession["user"];
   }
 }
@@ -26,5 +27,7 @@ declare module "next-auth/jwt" {
     issuer?: string;
     refresh_token?: string;
     grant_type?: string;
+    roles?: string[];
+    username?: string;
   }
 }

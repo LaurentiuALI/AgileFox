@@ -1,5 +1,6 @@
 package com.agilefox.projects.service.impl;
 
+import com.agilefox.projects.client.UserClient;
 import com.agilefox.projects.dto.ProjectRequestDTO;
 import com.agilefox.projects.dto.ProjectResponseDTO;
 import com.agilefox.projects.exceptions.ResourceNotFoundException;
@@ -7,6 +8,8 @@ import com.agilefox.projects.model.EstimationType;
 import com.agilefox.projects.model.Project;
 import com.agilefox.projects.repository.ProjectRepository;
 import com.agilefox.projects.service.ProjectService;
+import com.agilefox.projects.service.ProjectUserService;
+import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -20,6 +23,8 @@ import java.util.stream.Collectors;
 public class ProjectServiceImpl implements ProjectService {
 
     private final ProjectRepository projectRepository;
+    private final UserClient userClient;
+    private final ProjectUserService projectUserService;
 
     public ProjectResponseDTO addProject(ProjectRequestDTO projectRequestDTO) {
         Project project = Project.builder()
@@ -50,6 +55,17 @@ public class ProjectServiceImpl implements ProjectService {
         } else {
             throw new ResourceNotFoundException("Project with id " + id + " not found");
         }
+    }
+
+    @Override
+    public void addUserToProject(Long projectId, String username) {
+        try {
+            String userId = userClient.getUser(username);
+            projectUserService.addUserToProject(projectId, userId);
+        } catch (FeignException.NotFound e) {
+            throw new ResourceNotFoundException("User with username " + username + " not found");
+        }
+
     }
 
     @Override

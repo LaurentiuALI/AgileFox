@@ -25,7 +25,7 @@ export async function submitBacklogItem(formData: {
   }
 
   try {
-    const response = await fetch(`${process.env.BACKEND_URL}/backlogitem`, {
+    const response = await fetch(`${process.env.BACKEND_URL}/backlogitem/item`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${idToken}`,
@@ -33,7 +33,6 @@ export async function submitBacklogItem(formData: {
       },
       body: JSON.stringify(formData),
     });
-    console.log("🚀 ~ formData:", formData);
 
     if (!response.ok) {
       console.error(

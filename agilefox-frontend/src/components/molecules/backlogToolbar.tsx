@@ -5,7 +5,8 @@ import Link from "next/link";
 
 export default function BacklogToolbar() {
   const pathname = usePathname();
-  const match = pathname?.match(/^\/project\/(\d)\/backlog/);
+  const match = pathname?.match(/^\/project\/(\d+)\/backlog/);
+
   const projectId = match ? match[1] : null;
 
   if (pathname.includes("backlog")) {

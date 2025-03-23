@@ -1,10 +1,10 @@
 eureka:
   instance:
     prefer-ip-address: true
-    hostname: localhost
+    hostname: gateway-api-microservice
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: http://eureka-server:8761/eureka/
     register-with-eureka: true
     fetch-registry: true
 
@@ -30,12 +30,18 @@ spring:
             - Path=/state/**,/type/**,/backlogitem/**,/card/**,/checkitem/**
           filters:
             - PrefixPath=/api
+        - id: user-routes
+          uri: lb://USER
+          predicates:
+            - Path=/user/**
+          filters:
+            - PrefixPath=/api
   security:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://localhost:8080/realms/agilefox-spring-microservices
-          jwk-set-uri: ${spring.security.oauth2.resourceserver.jwt.issuer-uri}/protocol/openid-connect/certs
+          issuer-uri: http://keycloak:8080/realms/agilefox-spring-microservices
+          jwk-set-uri: http://keycloak:8080/realms/agilefox-spring-microservices/protocol/openid-connect/certs
 
 jwt:
   auth:
@@ -43,13 +49,8 @@ jwt:
       principle-attribute: preferred_username
       resource-id: spring-client
 
-server:
-  port: 8085
-
 logging:
   level:
-    org.springframework.cloud.gateway: DEBUG
-    reactor.netty.http.client: DEBUG
-    org.springframework.web: DEBUG
-    org.springframework.cloud: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.security.oauth2: DEBUG
 

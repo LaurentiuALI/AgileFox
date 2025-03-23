@@ -1,8 +1,7 @@
 package com.agilefox.backlog.controller;
 
-import com.agilefox.backlog.dto.CardRequestDTO;
-import com.agilefox.backlog.dto.CardResponseDTO;
-import com.agilefox.backlog.dto.ScoreResponseDTO;
+import com.agilefox.backlog.dto.Card.CardRequestDTO;
+import com.agilefox.backlog.dto.Card.CardResponseDTO;
 import com.agilefox.backlog.service.CardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

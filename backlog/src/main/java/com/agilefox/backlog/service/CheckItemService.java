@@ -1,7 +1,7 @@
 package com.agilefox.backlog.service;
 
-import com.agilefox.backlog.dto.CheckItemRequestDTO;
-import com.agilefox.backlog.dto.CheckItemResponseDTO;
+import com.agilefox.backlog.dto.Card.CheckItem.CheckItemRequestDTO;
+import com.agilefox.backlog.dto.Card.CheckItem.CheckItemResponseDTO;
 
 import java.util.List;
 

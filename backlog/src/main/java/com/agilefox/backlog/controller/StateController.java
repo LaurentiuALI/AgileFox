@@ -1,8 +1,7 @@
 package com.agilefox.backlog.controller;
 
-import com.agilefox.backlog.dto.StateRequestDTO;
-import com.agilefox.backlog.dto.StateResponseDTO;
-import com.agilefox.backlog.dto.TypeResponseDTO;
+import com.agilefox.backlog.dto.BacklogItem.State.StateRequestDTO;
+import com.agilefox.backlog.dto.BacklogItem.State.StateResponseDTO;
 import com.agilefox.backlog.service.StateService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +25,18 @@ public class StateController {
         } else {
             return stateService.getStates(); // Call this method if projectId is not provided
         }
+    }
+
+    @GetMapping("/type/{typeId}")
+    @ResponseStatus(HttpStatus.FOUND)
+    public List<StateResponseDTO> getStatesByTypeId(@PathVariable Long typeId) {
+            return stateService.getStatesOfType(typeId); // Call this method if projectId is not provided
+    }
+
+    @PatchMapping
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public StateResponseDTO updateState(@RequestBody StateRequestDTO stateRequestDTO) {
+        return stateService.updateState(stateRequestDTO);
     }
 
     @DeleteMapping("/{id}")

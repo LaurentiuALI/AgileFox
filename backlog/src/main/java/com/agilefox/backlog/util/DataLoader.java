@@ -21,17 +21,17 @@ public class DataLoader implements CommandLineRunner {
 
     private void loadUserData() {
 
-        if(stateRepository.count() == 0) {
-            State state1 = State.builder().name("Open").description("This marks the item as Open").projectId(7).build();
-            State state2 = State.builder().name("In Progress").description("This marks the item as In Progress").projectId(7).build();
-            State state3 = State.builder().name("Done").description("This marks the item as Done").projectId(7).build();
-
-
-
-            stateRepository.save(state1);
-            stateRepository.save(state2);
-            stateRepository.save(state3);
-        }
+//        if(stateRepository.count() == 0) {
+//            State state1 = State.builder().name("Open").description("This marks the item as Open").projectId(7).build();
+//            State state2 = State.builder().name("In Progress").description("This marks the item as In Progress").projectId(7).build();
+//            State state3 = State.builder().name("Done").description("This marks the item as Done").projectId(7).build();
+//
+//
+//
+//            stateRepository.save(state1);
+//            stateRepository.save(state2);
+//            stateRepository.save(state3);
+//        }
 
         if(typeRepository.count() == 0) {
             Type type1 = Type.builder().name("Story").projectId(7L).build();
