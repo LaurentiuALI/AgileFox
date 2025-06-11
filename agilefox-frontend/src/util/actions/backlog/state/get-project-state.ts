@@ -1,21 +1,21 @@
 "use server";
 
 import { State } from "@/types/State";
-import { getIdToken } from "@/util/SessionTokenAccesor";
+import { getAccessToken } from "@/util/SessionTokenAccesor";
 
 export async function getProjectStates({
   projectId,
 }: {
   projectId: string | number;
 }): Promise<State[]> {
-  const idToken = await getIdToken();
+  const accessToken = await getAccessToken();
   try {
     const response = await fetch(
       `${process.env.BACKEND_URL}/state?projectId=${projectId}`,
       {
         method: "GET",
         headers: {
-          Authorization: `Bearer ${idToken}`,
+          Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/json",
         },
       }

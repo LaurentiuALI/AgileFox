@@ -31,9 +31,9 @@ public class TypeController {
         return typeService.addType(typeRequest);
     }
 
-    @DeleteMapping
+    @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public void deleteType(@RequestParam Long id){
+    public void deleteType(@PathVariable Long id){
         typeService.deleteType(id);
     }
 }

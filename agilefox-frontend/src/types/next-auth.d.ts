@@ -9,7 +9,7 @@ declare module "next-auth" {
       refresh_token?: string;
       expires_at?: number;
       error?: string;
-      roles?: string[];
+      roles: string[];
       username?: string;
     } & DefaultSession["user"];
   }

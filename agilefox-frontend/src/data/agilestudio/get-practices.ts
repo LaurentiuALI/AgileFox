@@ -10,12 +10,11 @@ export function useGetPractices({
 }) {
   return useQuery({
     queryFn: () =>
-      // projectId is guaranteed to exist here if enabled is true.
       getPractices({
         projectId: projectId as number,
         practiceId: practiceId,
       }),
     queryKey: ["practices", projectId, practiceId],
-    enabled: projectId !== undefined || practiceId !== undefined, // Only run the query if projectId is defined
+    enabled: projectId !== undefined || practiceId !== undefined
   });
 }

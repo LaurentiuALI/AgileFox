@@ -6,5 +6,5 @@ export const backlogItemSchema = z.object({
   }),
   description: z.string(),
   type: z.string(),
-  state: z.string(),
+  assignee: z.string().optional(),
 });

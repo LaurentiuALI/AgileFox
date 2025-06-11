@@ -89,8 +89,6 @@ public class CardServiceImpl implements CardService {
     @Override
     public ScoreResponseDTO getCardScore(long cardId){
         List<CheckItem> checkItems = checkItemRepository.findCheckItemsByCardId(cardId);
-
-        checkItems.forEach(checkItem -> { log.info("CheckItem: {}", checkItem); });
         int actualScore = 0;
 
         for(CheckItem checkItem : checkItems){
@@ -156,12 +154,37 @@ public class CardServiceImpl implements CardService {
     @Override
     public void deleteCardById(long id) {
         log.info("Deleting card with ID: {}", id);
-        if (!cardRepository.existsById(id)) {
-            log.error("Card with ID: {} not found", id);
-            throw new RuntimeException("Card not found");
+
+        Card card = cardRepository.findById(id)
+                .orElseThrow(() -> {
+                    log.error("Card with ID: {} not found", id);
+                    return new RuntimeException("Card not found");
+                });
+
+        if (card.getBacklogitem() == null) {
+            log.info("Card is a template. Deleting all instances with matching signature...");
+
+            List<Card> matchingAssignedCards = cardRepository
+                    .findByType_IdAndState_IdAndTitleAndPurposeAndBacklogitemIsNotNull(
+                            card.getType().getId(),
+                            card.getState().getId(),
+                            card.getTitle(),
+                            card.getPurpose()
+                    );
+
+            log.info("Found {} associated cards", matchingAssignedCards.size());
+
+            for (Card assigned : matchingAssignedCards) {
+                checkItemRepository.deleteAll(checkItemRepository.findCheckItemsByCardId(assigned.getId()));
+                cardRepository.delete(assigned);
+            }
         }
-        cardRepository.deleteById(id);
-        log.info("Card with ID: {} deleted successfully", id);
+
+        checkItemRepository.deleteAll(checkItemRepository.findCheckItemsByCardId(card.getId()));
+
+        cardRepository.delete(card);
+
+        log.info("Card with ID: {} and all its equivalents deleted successfully", id);
     }
 
     private CardResponseDTO convertToResponseDTO(Card card) {
@@ -181,19 +204,32 @@ public class CardServiceImpl implements CardService {
         Type type = typeRepository.findById(cardRequest.getTypeId()).orElseThrow( () -> new RuntimeException("Type not found"));
         State state = stateRepository.findById(cardRequest.getStateId()).orElseThrow( () -> new RuntimeException("State not found"));
 
-        BacklogItem backlogItem = backlogItemRepository.findById(cardRequest.getId()).orElse(null);
+        if(cardRequest.getId() != null){
+            BacklogItem backlogItem = backlogItemRepository.findById(cardRequest.getId()).orElse(null);
+            List<CheckItem> checkItems = checkItemRepository.findCheckItemsByCardId(cardRequest.getId());
+            return new Card(
+                    cardRequest.getId(),
+                    cardRequest.getProjectId(),
+                    type,
+                    state,
+                    backlogItem,
+                    cardRequest.getTitle(),
+                    cardRequest.getPurpose(),
+                    checkItems
+            );
+        } else {
+            return new Card(
+                    null,
+                    cardRequest.getProjectId(),
+                    type,
+                    state,
+                    null,
+                    cardRequest.getTitle(),
+                    cardRequest.getPurpose(),
+                    null
+            );
+        }
 
-        List<CheckItem> checkItems = checkItemRepository.findCheckItemsByCardId(cardRequest.getId());
 
-        return new Card(
-                cardRequest.getId(),
-                cardRequest.getProjectId(),
-                type,
-                state,
-                backlogItem,
-                cardRequest.getTitle(),
-                cardRequest.getPurpose(),
-                checkItems
-        );
     }
 }

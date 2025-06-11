@@ -13,5 +13,7 @@ export const BacklogItemSchema = z.object({
   }),
   description: z.string(),
   username: z.string().optional().nullable(),
+  totalScore: z.number(),
+  actualScore: z.number(),
 });
 export type BacklogItem = z.infer<typeof BacklogItemSchema>;

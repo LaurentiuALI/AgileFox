@@ -10,17 +10,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useGetUsers } from "@/data/get-users";
-import { BacklogItem } from "@/types/BacklogItem";
-import { patchBacklogItem } from "@/util/actions/backlog/backlogItem/patch-backlogItem";
+import { useUpdateBacklogItem } from "@/data/backlog/backlogItem/useBacklogItem";
+import { useGetUsersOfProject } from "@/data/project/useProject";
 
-export default function AsigneeSelector({
-  backlogItem,
-}: {
-  backlogItem: BacklogItem;
-}) {
-  const { data, isLoading, isError } = useGetUsers();
+export default function AsigneeSelector({ value, backlogItemId, projectId }: { value: string, backlogItemId: number, projectId: number }) {
 
+  const mutation = useUpdateBacklogItem();
+  const { data, isLoading, isError } = useGetUsersOfProject({ projectId });
   if (isLoading) {
     return (
       <Badge className="m-4 rounded-xl flex gap-8 p-2 bg-neutral-600">
@@ -36,25 +32,25 @@ export default function AsigneeSelector({
     );
   }
 
-  const onChange = async (value: string) => {
-    await patchBacklogItem({
-      id: backlogItem.id,
-      projectId: backlogItem.projectId,
-      username: value, // Only updating username
-    });
+  const onChange = (value: string) => {
+    mutation.mutate({ id: backlogItemId, projectId: projectId, username: value });
   };
 
-  const assignee = data.find((user) => user.username === backlogItem.username);
-
   return (
-    <Select defaultValue={assignee?.username} onValueChange={onChange}>
-      <SelectTrigger className="w-[180px] border-none shadow-none bg-nonelocalhost:3000
-       rounded-xl">
-        <SelectValue placeholder="Select assignee" />
+    <Select
+      defaultValue={value == null ? "null" : value}
+      onValueChange={onChange}
+    >
+      <SelectTrigger
+        className="w-[180px] border-none shadow-none bg-none
+       rounded-xl"
+      >
+        <SelectValue placeholder="Unassigned" />
       </SelectTrigger>
       <SelectContent>
         <SelectGroup>
           <SelectLabel>Asignee</SelectLabel>
+          <SelectItem value="null"> Unassigned </SelectItem>
           {data.map((user) => (
             <SelectItem key={user.id} value={user.username}>
               {user.firstName} {user.lastName} ({user.username})

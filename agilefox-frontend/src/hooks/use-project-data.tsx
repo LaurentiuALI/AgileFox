@@ -1,16 +1,17 @@
-import { useGetCards } from "@/data/get-cards";
-import { useGetProjectType } from "@/data/get-project-types";
-import { useGetProjectState } from "@/data/state/get-project-states";
+import { useGetCards } from "@/data/card/useCard";
+import { useGetProjectType } from "@/data/backlog/type/useType";
+import { useGetProjectState } from "@/data/backlog/state/useState";
 import { Card } from "@/types/Card";
 import { State } from "@/types/State";
 import { Type } from "@/types/Type";
 
 interface ProjectData {
-  cards: Card[]; // Replace with your card type if available
+  cards: Card[]; //
   states: State[];
   types: Type[];
   loading: boolean;
   error: boolean;
+  isFetching: boolean;
 }
 
 export default function useProjectData(projectId: string): ProjectData {
@@ -18,11 +19,13 @@ export default function useProjectData(projectId: string): ProjectData {
     data: cards,
     isLoading: cardsLoading,
     isError: cardsError,
+    isFetching: cardsFetching,
   } = useGetCards({ projectId });
   const {
     data: states,
     isLoading: statesLoading,
     isError: statesError,
+    isFetching: statesFetching,
   } = useGetProjectState({
     projectId,
   });
@@ -30,6 +33,7 @@ export default function useProjectData(projectId: string): ProjectData {
     data: types,
     isLoading: typesLoading,
     isError: typesError,
+    isFetching: typesFetching,
   } = useGetProjectType({
     projectId,
   });
@@ -41,5 +45,6 @@ export default function useProjectData(projectId: string): ProjectData {
     loading: cardsLoading || statesLoading || typesLoading,
     error:
       cardsError || statesError || typesError || !cards || !states || !types,
+    isFetching: cardsFetching || statesFetching || typesFetching,
   };
 }

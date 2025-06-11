@@ -8,14 +8,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 public class CardRequestDTO {
-    private long id;
+    private Long id;
 
     private long projectId;
     private long typeId;
     private long stateId;
     private Long backlogItemId;
-
-
 
     private String title;
     private String purpose;

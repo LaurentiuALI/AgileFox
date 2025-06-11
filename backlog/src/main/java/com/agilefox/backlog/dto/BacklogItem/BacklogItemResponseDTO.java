@@ -22,4 +22,7 @@ public class BacklogItemResponseDTO {
     private String title;
     private String description;
     private String username;
+
+    private int totalScore;
+    private int actualScore;
 }

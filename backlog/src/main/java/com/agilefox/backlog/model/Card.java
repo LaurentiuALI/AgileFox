@@ -16,9 +16,9 @@ public class Card {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
 
-    private long projectId;
+    private Long projectId;
 
     @ManyToOne
     @JoinColumn(name = "typeId")

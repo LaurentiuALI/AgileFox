@@ -9,7 +9,9 @@ import java.util.Optional;
 
 @Repository
 public interface BacklogItemRepository extends JpaRepository<BacklogItem, Long> {
+    BacklogItem findByIdAndProjectId(Long id, Long projectId);
     public List<BacklogItem> findByProjectId(Long projectId);
     public List<BacklogItem> findByType_IdAndState_Id(Long typeId, Long stateId);
     Optional<BacklogItem> findByProjectIdAndId(Long projectId, Long id);
+    int countByStateId(Long stateId);
 }

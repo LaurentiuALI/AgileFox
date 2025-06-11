@@ -52,10 +52,11 @@ public class CheckItemServiceImpl implements CheckItemService {
     @Override
     public List<CheckItemResponseDTO> getCheckItemsOfCard(long cardId) {
         log.info("Fetching check items for card with ID: {}", cardId);
-        List<CheckItemResponseDTO> checkItems = ((List<CheckItem>) checkItemRepository.findAll()).stream()
-                .filter(checkItem -> checkItem.getCard().getId() == cardId)
-                .map(this::convertToResponseDTO)
-                .collect(Collectors.toList());
+//        List<CheckItemResponseDTO> checkItems = ((List<CheckItem>) checkItemRepository.findAll()).stream()
+//                .filter(checkItem -> checkItem.getCard().getId() == cardId)
+//                .map(this::convertToResponseDTO)
+//                .collect(Collectors.toList());
+        List<CheckItemResponseDTO> checkItems = checkItemRepository.findCheckItemsByCardId(cardId).stream().map(this::convertToResponseDTO).collect(Collectors.toList());
         log.info("Found {} check items for card ID: {}", checkItems.size(), cardId);
         return checkItems;
     }

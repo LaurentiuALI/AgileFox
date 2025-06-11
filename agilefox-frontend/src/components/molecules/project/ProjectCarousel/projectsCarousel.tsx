@@ -1,5 +1,5 @@
 "use client";
-import { useGetProjectsOfUser } from "@/data/get-projects";
+import { useGetProjectsOfUser } from "@/data/project/useProject";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import {
@@ -11,7 +11,7 @@ import {
 } from "../../../ui/carousel";
 import ProjectCard from "../ProjectCard/projectCard";
 import ProjectCarouselSkeleton from "./projectCarouselSkeleton";
-import { useGetBacklogItems } from "@/data/get-backlogItems";
+import { useGetBacklogItemsOfUser } from "@/data/backlog/backlogItem/useBacklogItem";
 
 export default function ProjectsCarousel() {
   const { data, status } = useSession();
@@ -35,14 +35,12 @@ export default function ProjectsCarousel() {
     username,
   });
 
-  const { data: backlogItems } = useGetBacklogItems({ username });
+  const { data: backlogItems } = useGetBacklogItemsOfUser({ username });
 
-  // Handle loading projects
   if (isLoading || status === "loading") {
     return <ProjectCarouselSkeleton />;
   }
 
-  // Handle error state
   if (isError || projects === undefined) {
     return (
       <div className="bg-containerBackground flex justify-center">
@@ -65,13 +63,19 @@ export default function ProjectsCarousel() {
                 assignedIssueCount={
                   Array.isArray(backlogItems)
                     ? backlogItems.filter(
-                        (backlogItem) => backlogItem.projectId === project.id
-                      ).length
+                      (backlogItem) => backlogItem.projectId === project.id
+                    ).length
                     : 1
                 }
               />
             </CarouselItem>
           ))}
+          {
+            projects.length === 0 && (
+              <div className="flex justify-center items-center h-full w-full">
+                <div className="text-4xl p-4">No projects found.</div>
+              </div>
+            )}
         </CarouselContent>
         <CarouselPrevious className="ml-4" />
         <CarouselNext className="mr-4" />

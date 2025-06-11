@@ -33,7 +33,10 @@ export default function AddCheckitemDialog({
   return (
     <Dialog>
       <DialogTrigger>
-        <PlusCircle className="w-6 h-6 text-neutral-600 mt-6" />
+        <Button variant="outline" className="mt-2 w-full">
+          <PlusCircle className="mr-2 h-4 w-4" />
+          Add Check Item
+        </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>

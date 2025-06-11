@@ -1,7 +1,7 @@
 "use server";
 
-import { Practice, PracticeSchema } from "@/types/agilestudio/practiceTypes";
-import { getIdToken } from "@/util/SessionTokenAccesor";
+import { Practice } from "@/types/agilestudio/practiceTypes";
+import { getAccessToken } from "@/util/SessionTokenAccesor";
 
 export async function getPractices({
   projectId,
@@ -10,9 +10,9 @@ export async function getPractices({
   projectId: number;
   practiceId?: number;
 }): Promise<Practice[] | Practice> {
-  const idToken = await getIdToken();
+  const accessToken = await getAccessToken();
 
-  if (!idToken) {
+  if (!accessToken) {
     throw new Error("User is not authenticated or token is missing");
   }
 
@@ -26,26 +26,23 @@ export async function getPractices({
     queryParams.append("id", practiceId.toString());
   }
   // Ensure the endpoint matches your backend's mapping
-  const url = `${
-    process.env.BACKEND_URL
-  }/agilestudio/practice?${queryParams.toString()}`;
-  console.log("🚀 ~ url:", url);
+  const url = `${process.env.BACKEND_URL
+    }/agilestudio/practice?${queryParams.toString()}`;
 
   try {
     const response = await fetch(url, {
       method: "GET",
       headers: {
-        Authorization: `Bearer ${idToken}`,
+        Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/json",
       },
     });
     const data = await response.json();
-    console.log("🚀 ~ data:", data);
 
     if (practiceId !== undefined && data.length == 1) {
-      return PracticeSchema.parse(data.pop());
+      return data.pop() as Practice;
     } else {
-      return PracticeSchema.array().parse(data);
+      return data as Practice[];
     }
   } catch (error) {
     console.error("Error in getPractice:", error);

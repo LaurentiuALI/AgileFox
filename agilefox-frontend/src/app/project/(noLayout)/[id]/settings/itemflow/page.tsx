@@ -5,6 +5,7 @@ import AddTypeDialog from "@/components/molecules/settings/addType";
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
   SelectTrigger,
   SelectValue,
@@ -19,26 +20,29 @@ import { updateState } from "@/util/actions/backlog/state/update-state";
 import SortableState from "./SortableState";
 import useProjectData from "@/hooks/use-project-data";
 import SortableList from "./SortableList";
+import { SelectLabel } from "@radix-ui/react-select";
+import { Trash } from "lucide-react";
+import { useDeleteType } from "@/data/backlog/type/useType";
+import { Button } from "@/components/ui/button";
 
 export default function Settings() {
   const { id } = useParams();
   if (!id || Array.isArray(id)) {
-    throw new Error("Invalid ID"); // Handle missing/array case
+    throw new Error("Invalid ID");
   }
 
-  const { cards, states, types, loading, error } = useProjectData(id);
+  const { cards, states, types, loading, error, isFetching } = useProjectData(id);
 
   const [updating, setUpdating] = useState(false);
   const [selectedType, setSelectedType] = useState<string>("");
   const [statesList, setStatesList] = useState<State[]>([]);
 
+  const mutation = useDeleteType({ projectId: id });
   useEffect(() => {
     if (states.length > 0) {
-      // Filter states based on selected type
       const filteredStates = states.filter(
         (state) => state.typeId === Number(selectedType)
       );
-      // Sort states based on stateOrder
       const sortedStates = filteredStates.sort(
         (a, b) => a.stateOrder - b.stateOrder
       );
@@ -50,7 +54,6 @@ export default function Settings() {
     setStatesList(newStates);
     setUpdating(true);
     try {
-      // Update all states concurrently with their new order
       await Promise.all(
         newStates.map((state, index) =>
           updateState({
@@ -84,7 +87,7 @@ export default function Settings() {
       </div>
 
       <div className="w-full h-1/2 ">
-        <div className="p-4">
+        <div className="p-4 flex gap-4 items-center">
           <Select
             value={selectedType}
             onValueChange={(value) => setSelectedType(value)}
@@ -93,13 +96,16 @@ export default function Settings() {
               <SelectValue placeholder="Type" />
             </SelectTrigger>
             <SelectContent className="w-56">
-              {types.map((type) => (
-                <SelectItem value={type.id.toString()} key={type.id}>
-                  {type.name}
-                </SelectItem>
-              ))}
+              <SelectGroup>
+                {types.length > 0 ? types.map((type) => (
+                  <SelectItem value={type.id.toString()} key={type.id}>
+                    {type.name}
+                  </SelectItem>
+                )) : <SelectLabel className="text-neutral-400 p-2">No types found. Please add a new one</SelectLabel>}
+              </SelectGroup>
             </SelectContent>
           </Select>
+          {selectedType && (isFetching ? "fetching.." : <Button variant={"destructive"} onClick={() => mutation.mutate({ typeId: selectedType })}> Delete Type <Trash /> </Button>)}
         </div>
 
         <div className="w-full h-1/2 p-4">

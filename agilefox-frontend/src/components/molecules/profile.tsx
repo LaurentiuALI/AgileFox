@@ -20,7 +20,7 @@ export default function Profile() {
       session &&
       session.user.error === "RefreshAccessTokenError"
     ) {
-      signOut({ callbackUrl: "/login" });
+      signOut({ callbackUrl: "/" });
     }
   }, [session, status]);
   return (

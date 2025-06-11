@@ -8,6 +8,7 @@ import com.agilefox.backlog.exceptions.ResourceNotFoundException;
 import com.agilefox.backlog.exceptions.StateAlreadyExistsException;
 import com.agilefox.backlog.model.State;
 import com.agilefox.backlog.model.Type;
+import com.agilefox.backlog.repository.BacklogItemRepository;
 import com.agilefox.backlog.repository.StateRepository;
 import com.agilefox.backlog.repository.TypeRepository;
 import com.agilefox.backlog.service.StateService;
@@ -27,6 +28,7 @@ import java.util.stream.Collectors;
 public class StateServiceImpl implements StateService {
     private final StateRepository stateRepository;
     private final ProjectClient projectClient;
+    private final BacklogItemRepository backlogItemRepository;
     private final TypeRepository typeRepository;
     private final ModelMapper modelMapper;
 
@@ -47,6 +49,23 @@ public class StateServiceImpl implements StateService {
         List<State> states = stateRepository.findByProjectId(id);
 
         return states.stream().map(state -> new StateResponseDTO(state.getId(), state.getName(), state.getDescription(), state.getProjectId(), state.getStateOrder(), state.getType().getId())).collect(Collectors.toList());
+    }
+
+    public StateResponseDTO getFirstStateOfType(Long typeId) {
+        List<StateResponseDTO> states = getStatesOfType(typeId);
+        if (states.isEmpty()) {
+            log.info("No state found for type {}", typeId);
+            throw new ResourceNotFoundException("No state found for type " + typeId);
+        } else {
+            StateResponseDTO firstState = states.getFirst();
+            for( StateResponseDTO state : states ) {
+                if (state.getStateOrder() < firstState.getStateOrder()) {
+                    firstState = state;
+                }
+            }
+            return firstState;
+        }
+
     }
 
     @Override
@@ -120,6 +139,11 @@ public class StateServiceImpl implements StateService {
         log.info("START - Deleting state {}", id);
 
         State state = stateRepository.findById(id).orElse(null);
+
+        if (backlogItemRepository.countByStateId(id) > 0) {
+            throw new IllegalStateException("State is still in use");
+        }
+
         if(state != null){
             stateRepository.delete(state);
             log.info("END - Deleting state {}", id);

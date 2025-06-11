@@ -7,5 +7,9 @@ export default async function Page({
 }) {
   const { id } = await params;
 
-  return <PracticeTabs projectId={id} />;
+  return (
+    <div className="w-full h-full flex">
+      <PracticeTabs projectId={id} />
+    </div>
+  );
 }

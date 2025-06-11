@@ -8,6 +8,9 @@ target/
 projects.env.properties
 .env
 
+**/src/main/resources/application.properties
+**/src/main/resources/application-dev.properties
+
 ### VOLUMES ###
 project_volume
 

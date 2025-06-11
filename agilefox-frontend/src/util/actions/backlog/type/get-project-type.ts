@@ -1,21 +1,21 @@
 "use server";
 
 import { Type } from "@/types/Type";
-import { getIdToken } from "@/util/SessionTokenAccesor";
+import { getAccessToken } from "@/util/SessionTokenAccesor";
 
 export async function getProjectTypes({
   projectId,
 }: {
   projectId: number | string;
 }): Promise<Type[]> {
-  const idToken = await getIdToken();
+  const accessToken = await getAccessToken();
   try {
     const response = await fetch(
       `${process.env.BACKEND_URL}/type?projectId=${projectId}`,
       {
         method: "GET",
         headers: {
-          Authorization: `Bearer ${idToken}`,
+          Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/json",
         },
       }

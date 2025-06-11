@@ -10,6 +10,7 @@ import java.util.Optional;
 public interface BacklogItemService {
 
     public List<BacklogItemResponseDTO> getBacklogItems(Long projectId,Long id, String username);
+    BacklogItemResponseDTO getBacklogItem(Long projectId,Long id);
     public List<BacklogItemResponseDTO> getAllBacklogItemStateTypes(Long projectId);
     public BacklogItemResponseDTO getBacklogItemByProjectAndId(Long projectId, Long backlogItemId);
     public ScoreResponseDTO getBacklogItemScore(long backlogItemId);

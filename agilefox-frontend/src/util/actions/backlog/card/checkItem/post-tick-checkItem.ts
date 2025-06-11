@@ -1,14 +1,14 @@
 "use server";
 
-import { getIdToken } from "@/util/SessionTokenAccesor";
+import { getAccessToken } from "@/util/SessionTokenAccesor";
 export async function tickCheckItem({
   checkItemId,
 }: {
   checkItemId: number;
 }): Promise<boolean> {
-  const idToken = await getIdToken();
+  const accessToken = await getAccessToken();
 
-  if (!idToken) {
+  if (!accessToken) {
     console.error(
       "[tickCheckItem] User is not authenticated or token is missing."
     );
@@ -21,7 +21,7 @@ export async function tickCheckItem({
       {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${idToken}`,
+          Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/json",
         },
       }

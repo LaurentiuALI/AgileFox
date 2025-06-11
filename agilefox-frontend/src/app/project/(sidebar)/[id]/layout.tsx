@@ -1,5 +1,5 @@
-import { ProjectSidebar } from "@/components/molecules/projectSidebar";
-import { ProjectDrawer } from "@/components/molecules/projectDrawer";
+import { ProjectSidebar } from "@/components/molecules/project/projectSidebar";
+import { ProjectDrawer } from "@/components/molecules/project/projectDrawer";
 import {
   ResizableHandle,
   ResizablePanel,

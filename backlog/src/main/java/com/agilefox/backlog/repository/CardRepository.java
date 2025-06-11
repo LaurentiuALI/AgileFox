@@ -7,7 +7,13 @@ import java.util.List;
 
 public interface CardRepository extends CrudRepository<Card, Long> {
 
+    List<Card> findByType_IdAndState_IdAndTitleAndPurposeAndBacklogitemIsNotNull(
+            Long typeId, Long stateId, String title, String purpose
+    );
+
     List<Card> findByType_IdAndState_IdAndTitle(long typeId, long stateId, String title);
+
     List<Card> findByType_IdAndState_Id(long typeId, long stateId);
+
     List<Card> findByBacklogitem_Id(long backlogitemId);
 }

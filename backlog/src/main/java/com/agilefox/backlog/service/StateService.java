@@ -9,8 +9,9 @@ public interface StateService {
     List<StateResponseDTO> getStates();
     List<StateResponseDTO> getStatesOfType(Long typeId);
     List<StateResponseDTO> getStatesOfProject(Long id);
+    StateResponseDTO getFirstStateOfType(Long typeId);
     StateResponseDTO getNextStateOfType(Long projectId, Long typeId, Long stateId );
-    public StateResponseDTO addState( StateRequestDTO stateRequest);
-    public StateResponseDTO updateState(StateRequestDTO stateRequest);
-    public void deleteStateById(Long id);
+    StateResponseDTO addState( StateRequestDTO stateRequest);
+    StateResponseDTO updateState(StateRequestDTO stateRequest);
+    void deleteStateById(Long id);
 }

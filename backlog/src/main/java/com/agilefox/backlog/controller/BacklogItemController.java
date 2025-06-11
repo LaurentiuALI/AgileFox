@@ -21,17 +21,21 @@ public class BacklogItemController {
     @GetMapping("/item")
     @ResponseStatus(HttpStatus.OK)
     public List<BacklogItemResponseDTO> getBacklogItemsByProjectId(@RequestParam Optional<Long> projectId, @RequestParam Optional<Long> id, @RequestParam Optional<String> username) {
-        System.out.println("Username: " + username);
         Long project = projectId.orElse(null);
         Long itemId = id.orElse(null);
         String user = username.orElse(null);
         return backlogItemService.getBacklogItems(project, itemId, user);
     }
 
+    @GetMapping("/item/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public BacklogItemResponseDTO getBacklogItem(@RequestParam Long projectId, @PathVariable Long id) {
+        return backlogItemService.getBacklogItem(projectId, id);
+    }
+
     @GetMapping("/score/{id}")
     @ResponseStatus(HttpStatus.OK)
     public ScoreResponseDTO getScoreById(@PathVariable Long id) {
-
         return backlogItemService.getBacklogItemScore(id);
     }
 

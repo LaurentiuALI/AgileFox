@@ -1,21 +1,17 @@
 import { getIdToken } from "@/util/SessionTokenAccesor";
 import { getServerSession } from "next-auth";
-import { redirect } from "next/navigation";
+import { AuthOption } from "@/lib/nextAuthOption";
 
 export async function GET() {
-  const session = await getServerSession();
-  if (session) {
-    const idToken = await getIdToken();
+  const session = await getServerSession(AuthOption);
 
-    const url = `${process.env.END_SESSION_URL}?id_token_hint=${idToken}&post_logout_redirect_uri=${process.env.NEXTAUTH_URL}`;
-
-    try {
-      await fetch(url, { method: "GET" });
-    } catch (err) {
-      console.error("Error during Keycloak logout:", err);
-      return new Response("Error during Keycloak logout", { status: 500 });
-    }
+  if (!session) {
+    return Response.json({ url: "/" });
   }
-  redirect("/");
-  return new Response("Logged out", { status: 200 });
+
+  const idToken = await getIdToken();
+  console.log("🚀 ~ GET ~ idToken:", idToken)
+  const logoutUrl = `${process.env.END_SESSION_URL}?id_token_hint=${idToken}&post_logout_redirect_uri=${process.env.NEXTAUTH_URL}`;
+
+  return Response.json({ url: logoutUrl });
 }

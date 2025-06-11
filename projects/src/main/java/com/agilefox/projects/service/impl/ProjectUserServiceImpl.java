@@ -46,11 +46,13 @@ public class ProjectUserServiceImpl implements ProjectUserService {
         boolean isProductOwner = auth.getAuthorities().stream()
                 .anyMatch(grantedAuthority -> "ROLE_product owner".equals(grantedAuthority.getAuthority()));
 
-        if(isProductOwner) {
+        boolean isAdmin = auth.getAuthorities().stream()
+                .anyMatch(grantedAuthority -> "ROLE_admin".equals(grantedAuthority.getAuthority()));
+
+        if(isProductOwner || isAdmin) {
             return projectRepository.findAll().stream().map(project -> modelMapper.map(project, ProjectResponseDTO.class)).collect(Collectors.toList());
         }
 
-        System.out.println("username: " + username);
         String keycloakUserId = userClient.getUser(username);
         List<ProjectUser> projectUserList = projectUserRepository.findByUserId(keycloakUserId);
 

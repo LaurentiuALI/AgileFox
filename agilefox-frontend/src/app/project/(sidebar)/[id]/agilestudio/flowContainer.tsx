@@ -20,43 +20,46 @@ import {
   ConnectionMode,
   Connection,
   XYPosition,
+  type Node,
+  Edge,
+  MarkerType,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 
-import IconNode from "./IconNode";
+import { v4 as uuidv4 } from "uuid";
+
 import Sidebar from "./sidebar";
 import CustomEdge from "./customEdge";
 import { DndContext, DragEndEvent, DragStartEvent } from "@dnd-kit/core";
 import { Practice } from "@/types/agilestudio/practiceTypes";
 import { patchPractice } from "@/util/actions/agilestudio/patch-practice";
 import { Button } from "@/components/ui/button";
-
-// --- Types ---
-interface NodeData {
-  label: string;
-  iconType: string;
-  IconComponent?: React.ComponentType;
-  onNodeLabelChange?: (nodeId: string, newLabel: string) => void;
-  onNodeDelete?: (nodeId: string) => void;
-}
-
-interface EdgeData {
-  onEdgeLabelChange?: (edgeId: string, newLabel: string) => void;
-  onEdgeDelete?: (edgeId: string) => void;
-}
+import PracticeNode from "./nodes/PracticeNode";
+import ActivityNode from "./nodes/ActivityNode";
+import WorkProductNode from "./nodes/WorkProductNode";
+import AlphaNode from "./nodes/AlphaNode";
+import { AddNodeDialog } from "./AddNodeDialog";
+import StateNode from "./nodes/StateNode";
+import RoleGuard from "@/components/molecules/RoleGuard";
+import { useSession } from "next-auth/react";
 
 interface FlowContentProps {
   practice: Practice;
 }
 
-// --- FlowContent: Uses the ReactFlow hook inside a provider context ---
 function FlowContent({ practice }: FlowContentProps) {
-  const { screenToFlowPosition } = useReactFlow();
-  const [nodes, setNodes, onNodesChange] = useNodesState<NodeData>([]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState<EdgeData>([]);
-  const initialCoordsRef = useRef<XYPosition>({ x: 0, y: 0 });
 
-  // Use a state flag to track whether the saved data has been loaded
+  const { data } = useSession();
+
+
+  const { screenToFlowPosition } = useReactFlow();
+  const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
+  const initialCoordsRef = useRef<XYPosition>({ x: 0, y: 0 });
+  const [newNodeData, setNewNodeData] = useState<Node>();
+
+  const [openDialog, setOpenDialog] = useState(false);
+
   const [hasLoaded, setHasLoaded] = useState(false);
 
   const [isSaving, setIsSaving] = useState(false);
@@ -80,15 +83,71 @@ function FlowContent({ practice }: FlowContentProps) {
     });
     setIsSaving(false);
   };
-  // Save state to localStorage whenever nodes or edges change, but only after load
+
+  const toggleShortenCards = () => {
+    setNodes((nds) =>
+      nds.map((node) => ({
+        ...node,
+        data: { ...node.data, shorten: !node.data.shorten },
+      }))
+    );
+  };
 
   const handleConnect = useCallback(
-    (params: Connection) => setEdges((eds) => addEdge(params, eds)),
+    (params: Connection) =>
+      setEdges((eds: Edge[]) =>
+        addEdge(
+          {
+            ...params,
+            type: "floating",
+            markerEnd: { type: MarkerType.Arrow },
+          },
+          eds
+        )
+      ),
     [setEdges]
   );
 
-  // Register custom node types
-  const nodeTypes = useMemo(() => ({ iconNode: IconNode }), []);
+  const getSiblingEdges = useCallback(
+    (nodeId: string) => {
+      const node = nodes.find((node) => node.id === nodeId);
+      if (!node) return [];
+
+      const siblingEdges = edges.filter(
+        (edge) =>
+          edge.source === nodeId
+      );
+
+      return siblingEdges;
+    },
+    [nodes, edges]
+  );
+
+  const getParentEdges = useCallback(
+    (nodeId: string) => {
+      const node = nodes.find((node) => node.id === nodeId);
+      if (!node) return [];
+
+      const siblingEdges = edges.filter(
+        (edge) =>
+          edge.target === nodeId
+      );
+
+      return siblingEdges;
+    },
+    [nodes, edges]
+  );
+
+  const nodeTypes = useMemo(
+    () => ({
+      PracticeNode,
+      ActivityNode,
+      WorkProductNode,
+      AlphaNode,
+      StateNode,
+    }),
+    []
+  );
 
   const updateNodeLabel = useCallback(
     (nodeId: string, newLabel: string) => {
@@ -97,6 +156,20 @@ function FlowContent({ practice }: FlowContentProps) {
           node.id === nodeId
             ? { ...node, data: { ...node.data, label: newLabel } }
             : node
+        )
+      );
+    },
+    [setNodes]
+  );
+
+  const updateNodeDescription = useCallback(
+    (nodeId: string, newDescription: string) => {
+      setNodes((nds) =>
+        nds.map((node) => {
+          return node.id === nodeId
+            ? { ...node, data: { ...node.data, description: newDescription } }
+            : node
+        }
         )
       );
     },
@@ -113,7 +186,19 @@ function FlowContent({ practice }: FlowContentProps) {
     [setNodes, setEdges]
   );
 
-  // Edge callbacks
+  const toggleShorten = useCallback(
+    (nodeId: string) => {
+      setNodes((nds) =>
+        nds.map((node) =>
+          node.id === nodeId
+            ? { ...node, data: { ...node.data, shorten: !node.data.shorten } }
+            : node
+        )
+      );
+    },
+    [setNodes]
+  );
+
   const updateEdgeLabel = useCallback(
     (edgeId: string, newLabel: string) => {
       setEdges((eds) =>
@@ -132,19 +217,20 @@ function FlowContent({ practice }: FlowContentProps) {
     [setEdges]
   );
 
-  // Process nodes and edges to include callbacks
   const processedNodes = useMemo(() => {
-    console.log("Processing nodes:", nodes);
-
     return nodes.map((node) => ({
       ...node,
       data: {
         ...node.data,
         onNodeLabelChange: updateNodeLabel,
+        onNodeDescriptionChange: updateNodeDescription,
         onNodeDelete: removeNode,
+        getSiblingEdges: getSiblingEdges,
+        getParentEdges: getParentEdges,
+        toggleShorten: toggleShorten
       },
     }));
-  }, [nodes, updateNodeLabel, removeNode]);
+  }, [nodes, updateNodeLabel, removeNode, edges]);
 
   const processedEdges = useMemo(
     () =>
@@ -156,11 +242,16 @@ function FlowContent({ practice }: FlowContentProps) {
           onEdgeLabelChange: updateEdgeLabel,
           onEdgeDelete: removeEdge,
         },
+        markerEnd: {
+          type: MarkerType.ArrowClosed,
+          width: 40,
+          height: 40,
+          color: "orange",
+        },
       })),
     [edges, updateEdgeLabel, removeEdge]
   );
 
-  // DnD callbacks
   const handleDragStart = useCallback((event: DragStartEvent) => {
     if (event.activatorEvent instanceof MouseEvent) {
       initialCoordsRef.current = {
@@ -179,26 +270,30 @@ function FlowContent({ practice }: FlowContentProps) {
           IconComponent?: React.ComponentType;
         };
         if (!dragData) return;
+
+        setOpenDialog(true);
         const finalX = initialCoordsRef.current.x + (event.delta?.x || 0);
         const finalY = initialCoordsRef.current.y + (event.delta?.y || 0);
         const dropPosition = screenToFlowPosition({ x: finalX, y: finalY });
-        const newId = `node-${nodes.length + 1}`;
+        const newId = `node-${uuidv4()}`;
         const newNode = {
           id: newId,
           position: dropPosition,
-          type: "iconNode",
+          type: `${dragData.iconType}`,
           data: {
             label: dragData.label || "New Node",
             iconType: dragData.iconType,
             IconComponent: dragData.IconComponent,
+            description: "Description",
+            shorten: false
           },
         };
-        setNodes((nds) => nds.concat(newNode));
+        setNewNodeData(newNode);
       } catch (error) {
         console.error("Error handling drag end:", error);
       }
     },
-    [screenToFlowPosition, nodes, setNodes]
+    [screenToFlowPosition]
   );
 
   const handleDrop = useCallback((event: React.DragEvent<HTMLDivElement>) => {
@@ -215,17 +310,24 @@ function FlowContent({ practice }: FlowContentProps) {
 
   return (
     <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-      <div className="relative w-full h-full flex">
-        <Button onClick={handleSaving} className="absolute z-10">
-          Save
-          {isSaving && (
-            <div className="animate-spin rounded-full size-5 border-4 border-white border-t-transparent" />
-          )}
+      <div className="relative w-full h-full flex ">
+        <RoleGuard roles={data?.user.roles} allowed={["scrum master"]}>
+          <Button onClick={handleSaving} className="absolute z-10">
+            Save
+            {isSaving && (
+              <div className="animate-spin rounded-full size-5 border-4 border-white border-t-transparent" />
+            )}
+          </Button>
+        </RoleGuard>
+
+        <Button onClick={toggleShortenCards} className="absolute left-20 z-10">
+          Toggle shorten cards
         </Button>
         <ReactFlow
           id={practice.id}
           nodeTypes={nodeTypes}
           nodes={processedNodes}
+          edgeTypes={{ custom: CustomEdge }}
           edges={processedEdges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
@@ -233,7 +335,9 @@ function FlowContent({ practice }: FlowContentProps) {
           onConnect={handleConnect}
           onDrop={handleDrop}
           onDragOver={handleDragOver}
-          edgeTypes={{ custom: CustomEdge }}
+          panOnScroll
+          panOnDrag={[1, 2]}
+          selectionOnDrag
         >
           <Controls className="text-black" />
           <MiniMap
@@ -243,6 +347,12 @@ function FlowContent({ practice }: FlowContentProps) {
             nodeColor="black"
           />
           <Background variant={BackgroundVariant.Dots} gap={10} size={1} />
+          <AddNodeDialog
+            current={openDialog}
+            setOpenDialog={setOpenDialog}
+            setNodes={setNodes}
+            newNodeData={newNodeData}
+          />
         </ReactFlow>
         <Sidebar />
       </div>
@@ -250,7 +360,6 @@ function FlowContent({ practice }: FlowContentProps) {
   );
 }
 
-// --- FlowContainer: Wraps FlowContent with its own provider ---
 export default function FlowContainer({ practice }: { practice: Practice }) {
   return (
     <ReactFlowProvider key={practice.id}>

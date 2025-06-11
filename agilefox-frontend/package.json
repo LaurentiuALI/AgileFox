@@ -66,8 +66,10 @@
     "react-hook-form": "^7.53.1",
     "react-medium-image-zoom": "^5.2.14",
     "react-resizable-panels": "^2.1.7",
+    "sonner": "^2.0.3",
     "tailwind-merge": "^2.5.4",
     "tailwindcss-animate": "^1.0.7",
+    "uuid": "^11.1.0",
     "vaul": "^1.1.1",
     "zod": "^3.23.8"
   },

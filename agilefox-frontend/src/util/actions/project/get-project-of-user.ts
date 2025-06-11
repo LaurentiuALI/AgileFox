@@ -1,32 +1,32 @@
 "use server";
 
 import { Project } from "@/types/Project";
-import { getIdToken } from "@/util/SessionTokenAccesor";
+import { getAccessToken } from "@/util/SessionTokenAccesor";
 
 export async function getProjectOfUser({
   username,
 }: {
   username: string;
 }): Promise<Project[]> {
+  console.log("🚀 ~ username:", username)
   try {
-    // Obține sesiunea și tokenul utilizatorului
-    const idToken = await getIdToken();
+    const accessToken = await getAccessToken();
 
-    if (!idToken) {
+    if (!accessToken) {
       throw new Error("User is not authenticated or token is missing");
     }
 
-    // Fă cererea către backend
     const response = await fetch(
       `${process.env.BACKEND_URL}/project/user?username=${username}`,
       {
         method: "GET",
         headers: {
-          Authorization: `Bearer ${idToken}`,
+          Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/json",
         },
       }
     );
+    // console.log("🚀 ~ response:", await response.json())
 
     if (!response.ok) {
       throw new Error(

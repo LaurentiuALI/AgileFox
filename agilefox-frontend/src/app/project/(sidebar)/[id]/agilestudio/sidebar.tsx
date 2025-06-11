@@ -1,14 +1,21 @@
 "use client";
 import React from "react";
 import { useDraggable } from "@dnd-kit/core";
-import Practice from "@/../public/essence/Practice.svg";
-import Activity from "@/../public/essence/Activity.svg";
-import WorkProduct from "@/../public/essence/Work Product.svg";
-import Alpha from "@/../public/essence/Alpha.svg";
-import Image from "next/image";
 
+import { IconComponentType, icons } from "./nodes/types";
+import Image from "next/image";
 // A reusable component for a draggable icon.
-function DraggableIcon({ id, IconComponent, iconType, label }) {
+function DraggableIcon({
+  id,
+  IconComponent,
+  iconType,
+  label,
+}: {
+  id: string;
+  IconComponent: IconComponentType;
+  iconType: string;
+  label: string;
+}) {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id,
     data: { iconType, label, IconComponent },
@@ -24,49 +31,23 @@ function DraggableIcon({ id, IconComponent, iconType, label }) {
       style={style}
       {...listeners}
       {...attributes}
-      className="cursor-move"
+      className="cursor-grabbing"
     >
-      <Image src={IconComponent} alt={label} className="w-16 h-16" />
+      <Image src={IconComponent} alt={label} className="w-12 h-12 md:w-8 md:h-8" />
     </div>
   );
 }
 
 export default function Sidebar() {
-  // Define a list of draggable icons with their corresponding metadata.
-  const icons = [
-    {
-      id: "draggable-practice",
-      IconComponent: Practice,
-      iconType: "practice",
-      label: "Practice",
-    },
-    {
-      id: "draggable-activity",
-      IconComponent: Activity,
-      iconType: "activity",
-      label: "activity",
-    },
-    {
-      id: "draggable-workproduct",
-      IconComponent: WorkProduct,
-      iconType: "workproduct",
-      label: "workproduct",
-    },
-    {
-      id: "draggable-alpha",
-      IconComponent: Alpha,
-      iconType: "alpha",
-      label: "alpha",
-    },
-  ];
-
   return (
-    <div className="w-1/6 mr-8 p-4 h-full abso">
-      <div className="bg-neutral-500 h-full flex flex-col gap-4 items-center justify-center">
-        {icons.map((icon) => (
-          <DraggableIcon key={icon.id} {...icon} />
-        ))}
-      </div>
-    </div>
+    <div className="absolute top-12 h-[250px] w-[100px]">
+      <div className="bg-neutral-500 h-full w-full flex flex-col gap-4 items-center justify-center rounded-xl">
+        {
+          icons.map((icon) => (
+            <DraggableIcon key={icon.id} {...icon} />
+          ))
+        }
+      </div >
+    </div >
   );
 }

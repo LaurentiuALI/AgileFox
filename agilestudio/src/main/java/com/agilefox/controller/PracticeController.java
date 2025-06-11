@@ -3,6 +3,7 @@ package com.agilefox.controller;
 
 import com.agilefox.model.Practice;
 import com.agilefox.service.PracticeServiceImpl;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -11,11 +12,19 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/agilestudio")
+@Slf4j
 public class PracticeController {
     private final PracticeServiceImpl practiceServiceImpl;
 
     public PracticeController(PracticeServiceImpl practiceServiceImpl) {
         this.practiceServiceImpl = practiceServiceImpl;
+    }
+
+    @GetMapping("/all")
+    public List<Practice> getAll() {
+        List<Practice> all = practiceServiceImpl.getPractices();
+        log.info("Retrieved {} Practice docs: {}", all.size(), all);
+        return all;
     }
 
     @GetMapping("/practice")

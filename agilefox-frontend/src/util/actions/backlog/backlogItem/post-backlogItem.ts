@@ -1,53 +1,40 @@
 "use server";
 
-import { getIdToken } from "@/util/SessionTokenAccesor";
+import { getAccessToken } from "@/util/SessionTokenAccesor";
 
-/**
- * Submits a new backlog item to the backend API.
- * @param formData - The form data containing the backlog item details.
- * @returns A boolean indicating whether the submission was successful.
- * @throws Error if the user is not authenticated or the request fails.
- */
-export async function submitBacklogItem(formData: {
+export interface ISubmitBacklogItem {
   projectId: number;
-  typeId: number;
-  stateId: number;
+  typeId: string;
   title: string;
   description: string;
-}): Promise<boolean> {
-  const idToken = await getIdToken();
+  username?: string;
+}
+export async function submitBacklogItem(formData: ISubmitBacklogItem) {
+  const accessToken = await getAccessToken();
 
-  if (!idToken) {
+  if (!accessToken) {
     console.error(
       "[submitBacklogItem] User is not authenticated or token is missing."
     );
     throw new Error("Authentication required. Please log in.");
   }
 
-  try {
-    const response = await fetch(`${process.env.BACKEND_URL}/backlogitem/item`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${idToken}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(formData),
-    });
+  const response = await fetch(`${process.env.BACKEND_URL}/backlogitem/item`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(formData),
+  });
 
-    if (!response.ok) {
-      console.error(
-        `[submitBacklogItem] Failed to submit backlog item. Status: ${response.status}, Message: ${response.statusText}`
-      );
-      throw new Error("Failed to submit backlog item.");
-    }
-
-    console.log("[submitBacklogItem] Backlog item submitted successfully.");
-    return true;
-  } catch (error) {
+  if (!response.ok) {
     console.error(
-      "[submitBacklogItem] Error occurred while submitting backlog item:",
-      error
+      `[submitBacklogItem] Failed to submit backlog item. Status: ${response.status}, Message: ${response.statusText}`
     );
-    return false;
+    const text = JSON.parse(await response.text());
+    throw new Error(`Failed to submit backlog item: ${text.message}`);
   }
-}
+
+  console.log("[submitBacklogItem] Backlog item submitted successfully.");
+} 

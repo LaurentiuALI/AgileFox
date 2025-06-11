@@ -10,8 +10,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PlusCircle } from "lucide-react";
-import { postCard } from "@/util/actions/backlog/card/post-card";
 import { useState } from "react";
+import { useCreateCard } from "@/data/card/useCard";
+import { DialogClose } from "@radix-ui/react-dialog";
 
 export default function AddCardDialog({
   typeId,
@@ -24,24 +25,40 @@ export default function AddCardDialog({
 }) {
   const [title, setTitle] = useState<string>("");
   const [purpose, setPurpose] = useState<string>("");
+  const [open, setOpen] = useState<boolean>(false);
+  const addMutation = useCreateCard();
+
   const handleCreate = async () => {
     try {
-      await postCard({
+      console.log("Creating card with:", {
         projectId,
         typeId,
         stateId,
-        title: title,
-        purpose: purpose,
+        title,
+        purpose,
       });
+
+      addMutation.mutate({
+        projectId,
+        typeId,
+        stateId,
+        title,
+        purpose,
+      });
+      setOpen(false);
+
     } catch (error) {
       console.error(error);
     }
   };
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger>
-        <PlusCircle className="w-16 h-16 text-neutral-600" />
+        <Button variant="outline" className="w-full">
+          <PlusCircle className="mr-2 h-4 w-4" />
+          Add Card
+        </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
@@ -74,10 +91,12 @@ export default function AddCardDialog({
           />
         </div>
         <div className="w-full flex justify-center items-center gap-10">
-          <Button>Cancel</Button>
+          <DialogClose asChild>
+            <Button>Cancel</Button>
+          </DialogClose>
           <Button onClick={handleCreate}>Create</Button>
         </div>
       </DialogContent>
-    </Dialog>
+    </Dialog >
   );
 }

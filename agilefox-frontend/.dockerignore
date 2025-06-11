@@ -1,0 +1,9 @@
+# ignore local deps and build artifacts
+node_modules
+.next
+.DS_Store
+
+# ignore IDE and OS cruft
+.vscode
+.idea
+*.log

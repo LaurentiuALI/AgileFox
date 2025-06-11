@@ -1,1 +1,1 @@
-ALTER TABLE project ADD abbrev varchar(3);
+ALTER TABLE project ADD abbrev varchar(5);

@@ -9,7 +9,8 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { postType } from "@/util/actions/backlog/type/post-type";
+import { useCreateProjectType } from "@/data/backlog/type/useType";
+import { DialogClose } from "@radix-ui/react-dialog";
 import { PlusCircle } from "lucide-react";
 import { useState } from "react";
 
@@ -19,15 +20,9 @@ export default function AddTypeDialog({
   projectId: string | number;
 }) {
   const [name, setName] = useState<string>("");
+  const mutation = useCreateProjectType();
   const handleCreate = async () => {
-    try {
-      await postType({
-        projectId,
-        name: name,
-      });
-    } catch (error) {
-      console.error(error);
-    }
+    mutation.mutate({ projectId, name });
   };
 
   return (
@@ -57,8 +52,10 @@ export default function AddTypeDialog({
           />
         </div>
         <div className="w-full flex justify-center items-center gap-10">
-          <Button>Cancel</Button>
-          <Button onClick={handleCreate}>Create</Button>
+          <DialogClose className="flex gap-12">
+            <Button>Cancel</Button>
+            <Button type="submit" onClick={handleCreate}>Create</Button>
+          </DialogClose>
         </div>
       </DialogContent>
     </Dialog>

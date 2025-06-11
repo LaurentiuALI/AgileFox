@@ -13,7 +13,7 @@ export default function Authentication() {
       session &&
       session.user.error === "RefreshAccessTokenError"
     ) {
-      signOut({ callbackUrl: "/login" });
+      signOut({ callbackUrl: "/" });
     }
   }, [session, status]);
 

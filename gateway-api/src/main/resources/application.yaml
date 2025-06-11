@@ -1,10 +1,12 @@
+
 eureka:
   instance:
     prefer-ip-address: true
     hostname: gateway-api-microservice
   client:
     service-url:
-      defaultZone: http://eureka-server:8761/eureka/
+#      defaultZone: http://eureka-server:8761/eureka/
+      defaultZone: ${EUREKA_URL}
     register-with-eureka: true
     fetch-registry: true
 
@@ -36,21 +38,33 @@ spring:
             - Path=/user/**
           filters:
             - PrefixPath=/api
+        - id: agilestudio-routes
+          uri: lb://AGILESTUDIO
+          predicates:
+            - Path=/agilestudio/**
+          filters:
+            - PrefixPath=/api
   security:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://keycloak:8080/realms/agilefox-spring-microservices
-          jwk-set-uri: http://keycloak:8080/realms/agilefox-spring-microservices/protocol/openid-connect/certs
+          issuer-uri: ${JWT_ISSUER_URI}
+          jwk-set-uri: ${JWT_SET_URI}
+#          issuer-uri: http://keycloak:8080/realms/agilefox-spring-microservices
+#          jwk-set-uri: http://keycloak:8080/realms/agilefox-spring-microservices/protocol/openid-connect/certs
 
 jwt:
   auth:
     converter:
-      principle-attribute: preferred_username
-      resource-id: spring-client
+#      principle-attribute: preferred_username
+      principle-attribute: ${PRINCIPLE_ATTRIBUTE:preferred_username}
+#      resource-id: spring-client
+      resource-id: ${RESOURCE_ID:spring-client}
 
 logging:
   level:
     org.springframework.security: DEBUG
     org.springframework.security.oauth2: DEBUG
-
+    org.springframework.cloud.gateway: TRACE
+server:
+  port: ${SERVER_PORT:8085}

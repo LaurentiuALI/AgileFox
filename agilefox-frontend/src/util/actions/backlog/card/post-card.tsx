@@ -1,7 +1,7 @@
 "use server";
 
 import { Card, CardSchema } from "@/types/Card";
-import { getIdToken } from "@/util/SessionTokenAccesor";
+import { getAccessToken } from "@/util/SessionTokenAccesor";
 export async function postCard({
   typeId,
   stateId,
@@ -15,9 +15,9 @@ export async function postCard({
   title: string;
   purpose: string;
 }): Promise<Card | undefined> {
-  const idToken = await getIdToken();
+  const accessToken = await getAccessToken();
 
-  if (!idToken) {
+  if (!accessToken) {
     console.error("[postCard] User is not authenticated or token is missing.");
     throw new Error("Authentication required. Please log in.");
   }
@@ -26,7 +26,7 @@ export async function postCard({
     const response = await fetch(`${process.env.BACKEND_URL}/card`, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${idToken}`,
+        Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({

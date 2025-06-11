@@ -8,6 +8,9 @@ target/
 backlog.env.properties
 .env
 
+**/src/main/resources/application.properties
+**/src/main/resources/application-dev.properties
+
 ### VOLUMES ###
 backlog_volume
 

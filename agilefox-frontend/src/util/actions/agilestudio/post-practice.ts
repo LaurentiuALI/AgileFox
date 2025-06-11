@@ -1,6 +1,6 @@
 "use server";
 
-import { Edge } from "@/types/agilestudio/practiceTypes";
+import { Edge } from "@xyflow/react";
 import { getIdToken } from "@/util/SessionTokenAccesor";
 
 /**
@@ -22,9 +22,9 @@ export async function submitPractice({
   nodes?: Node[];
   edges?: Edge[];
 }): Promise<boolean> {
-  const idToken = await getIdToken();
+  const accessToken = await getIdToken();
 
-  if (!idToken) {
+  if (!accessToken) {
     console.error(
       "[submitPractice] User is not authenticated or token is missing."
     );
@@ -37,7 +37,7 @@ export async function submitPractice({
       {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${idToken}`,
+          Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({

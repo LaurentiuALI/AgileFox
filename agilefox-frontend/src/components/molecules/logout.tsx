@@ -2,7 +2,15 @@ import { signOut } from "next-auth/react";
 
 async function KeycloakSessionSignOut() {
   try {
-    await fetch("/api/auth/logout", { method: "GET" });
+    const res = await fetch("/api/auth/logout");
+    const data = await res.json();
+
+    if (data.url) {
+      // Redirecționează browserul către logout-ul Keycloak
+      window.location.href = data.url;
+    } else {
+      console.warn("Logout URL not received. Staying on page.");
+    }
   } catch (err) {
     console.error("Error logging out", err);
   }

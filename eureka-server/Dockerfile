@@ -20,3 +20,4 @@ EXPOSE 8761
 ENV JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=80.0"
 
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar /app/eureka-server.jar"]
+

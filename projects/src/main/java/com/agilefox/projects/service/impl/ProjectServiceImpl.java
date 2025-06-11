@@ -33,7 +33,6 @@ public class ProjectServiceImpl implements ProjectService {
                 .estimationType(EstimationType.valueOf(projectRequestDTO.getEstimation_type()))
                 .abbrev(projectRequestDTO.getAbbrev())
                 .build();
-
         projectRepository.save(project);
 
         log.info("Succesfully added project");

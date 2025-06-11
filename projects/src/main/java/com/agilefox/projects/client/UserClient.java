@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import java.util.List;
 
-@FeignClient(name = "user", url = "http://localhost:8085", configuration = AuthFeignInterceptor.class)
+@FeignClient(name = "user", url = "${user-service-url}", configuration = AuthFeignInterceptor.class)
 public interface UserClient {
     @RequestMapping(method = RequestMethod.GET, value="/user/{username}")
     String getUser(@PathVariable String username);

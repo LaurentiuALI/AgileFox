@@ -13,7 +13,9 @@ import lombok.NoArgsConstructor;
 public class NodeData {
     private String label;
     private String iconType;
-    @JsonProperty("IconComponent")
+    private String description;
+    private boolean shorten;
+//    @JsonProperty("IconComponent")
     private IconComponent iconComponent;
 
 }

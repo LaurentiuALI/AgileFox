@@ -5,6 +5,9 @@ import {
 } from "@/components/ui/resizable";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import RoleGuard from "@/components/molecules/RoleGuard";
+import { getServerSession } from "next-auth";
+import { AuthOption } from "@/lib/nextAuthOption";
 
 export default async function ProjectLayout({
   children,
@@ -14,6 +17,8 @@ export default async function ProjectLayout({
   params: Promise<{ id: number }>;
 }) {
   const { id } = await params;
+
+  const session = await getServerSession(AuthOption);
 
   return (
     <div className="h-full">
@@ -27,11 +32,13 @@ export default async function ProjectLayout({
                 Itemflow
               </Button>
             </Link>
-            <Link href={`/project/${id}/settings/people `}>
-              <Button className="w-full h-12" variant="secondary">
-                People
-              </Button>
-            </Link>
+            <RoleGuard roles={session?.user.roles} allowed={["admin"]}>
+              <Link href={`/project/${id}/settings/people `}>
+                <Button className="w-full h-12" variant="secondary">
+                  People
+                </Button>
+              </Link>
+            </RoleGuard>
           </div>
         </ResizablePanel>
         <ResizableHandle className="bg-transparent hover:bg-secondary" />

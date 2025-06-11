@@ -1,16 +1,16 @@
 "use server";
 
 import { Card, CardSchema } from "@/types/Card";
-import { getIdToken } from "@/util/SessionTokenAccesor";
+import { getAccessToken } from "@/util/SessionTokenAccesor";
 
 export async function getCardsOfProject({
   projectId,
 }: {
   projectId: string | number;
 }): Promise<Card[] | undefined> {
-  const idToken = await getIdToken();
+  const accessToken = await getAccessToken();
 
-  if (!idToken) {
+  if (!accessToken) {
     throw new Error("User is not authenticated or token is missing");
   }
 
@@ -20,14 +20,14 @@ export async function getCardsOfProject({
       {
         method: "GET",
         headers: {
-          Authorization: `Bearer ${idToken}`,
+          Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/json",
         },
       }
     );
 
     const data = await response.json();
-    return data.map((card: Card) => CardSchema.parse(card)); // Validate and return the parsed object
+    return data.map((card: Card) => CardSchema.parse(card));
   } catch (error) {
     console.error("Error in getCardsOfProject:", error);
     throw new Error("Failed to fetch cards of project");

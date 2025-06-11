@@ -23,11 +23,6 @@ import java.util.stream.Stream;
 
 @Component
 public class JwtGrantedAuthorityConverter implements Converter<Jwt, AbstractAuthenticationToken> {
-
-    private static final Logger log = LoggerFactory.getLogger(JwtGrantedAuthorityConverter.class);
-
-
-
     private final JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter =
             new JwtGrantedAuthoritiesConverter();
 
@@ -44,7 +39,6 @@ public class JwtGrantedAuthorityConverter implements Converter<Jwt, AbstractAuth
                 extractAllRoles(jwt).stream()
         ).collect(Collectors.toSet());
 
-        authorities.forEach(System.out::println);
         return new JwtAuthenticationToken(jwt, authorities, getPrincipleClaimName(jwt));
     }
 
@@ -55,7 +49,6 @@ public class JwtGrantedAuthorityConverter implements Converter<Jwt, AbstractAuth
     }
 
     private Collection<? extends GrantedAuthority> extractAllRoles(Jwt jwt) {
-        System.out.println(jwt.getTokenValue());
         Map<String, Object> realmAccess = jwt.getClaim("realm_access");
         Map<String, Object> resourceAccess = jwt.getClaim("resource_access");
         if (realmAccess == null || resourceAccess == null || resourceAccess.get(resourceId) == null) {

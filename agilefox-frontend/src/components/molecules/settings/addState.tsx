@@ -9,7 +9,8 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { postState } from "@/util/actions/backlog/state/post-state";
+import { useCreateProjectState } from "@/data/backlog/state/useState";
+import { DialogClose } from "@radix-ui/react-dialog";
 import { PlusCircle } from "lucide-react";
 import { useState } from "react";
 
@@ -22,26 +23,23 @@ export default function AddStateDialog({
 }) {
   const [name, setName] = useState<string>("");
   const [description, setDescription] = useState<string>("");
-  const [error, setError] = useState<string | null>(null);
+
+  const mutation = useCreateProjectState()
 
   const handleCreate = async () => {
-    try {
-      await postState({
-        projectId,
-        name: name,
-        description: description,
-        typeId,
-      });
-    } catch (err) {
-      setError(err?.message);
-    }
+    mutation.mutate({
+      projectId,
+      name: name,
+      description: description,
+      typeId,
+    });
   };
 
   return (
     <Dialog>
       <DialogTrigger asChild className="flex justify-center items-center">
         <Button className="ml-4 rounded-xl">
-          <PlusCircle className="text-white" /> Add State{" "}
+          <PlusCircle className="text-white" /> Add State
         </Button>
       </DialogTrigger>
       <DialogContent>
@@ -74,10 +72,11 @@ export default function AddStateDialog({
             value={description}
           />
 
-          {error && <p className="text-red-500">{error}</p>}
         </div>
         <div className="w-full flex justify-center items-center gap-10">
-          <Button>Cancel</Button>
+          <DialogClose asChild>
+            <Button>Cancel</Button>
+          </DialogClose>
           <Button onClick={handleCreate}>Create</Button>
         </div>
       </DialogContent>

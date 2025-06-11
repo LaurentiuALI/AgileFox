@@ -1,7 +1,7 @@
 "use server";
 
-import { Edge, Node } from "@/types/agilestudio/practiceTypes";
-import { getIdToken } from "@/util/SessionTokenAccesor";
+import { getAccessToken } from "@/util/SessionTokenAccesor";
+import { Edge, Node } from "@xyflow/react";
 
 export async function patchPractice({
   id,
@@ -16,9 +16,9 @@ export async function patchPractice({
   nodes?: Node[];
   edges?: Edge[];
 }): Promise<boolean> {
-  const idToken = await getIdToken();
+  const accessToken = await getAccessToken();
 
-  if (!idToken) {
+  if (!accessToken) {
     console.error("User is not authenticated or token is missing.");
     throw new Error("Authentication required. Please log in.");
   }
@@ -30,15 +30,13 @@ export async function patchPractice({
   if (nodes !== undefined) requestBody.nodes = nodes;
   if (edges !== undefined) requestBody.edges = edges;
 
-  console.log("PATCHING PRACTICE:", id, "WITH:", requestBody);
-
   try {
     const response = await fetch(
       `${process.env.BACKEND_URL}/agilestudio/practice?id=${id}`,
       {
         method: "PATCH",
         headers: {
-          Authorization: `Bearer ${idToken}`,
+          Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify(requestBody), // Only send defined fields

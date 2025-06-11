@@ -12,7 +12,7 @@ function formatDate(date: string) {
     hour: "numeric",
     minute: "numeric",
   };
-  return currDate.toLocaleDateString(undefined, options);
+  return currDate.toLocaleDateString(undefined, options as Intl.DateTimeFormatOptions);
 }
 
 export const columns: ColumnDef<User>[] = [
@@ -39,6 +39,6 @@ export const columns: ColumnDef<User>[] = [
   {
     accessorKey: "created",
     header: "Created",
-    cell: (current) => formatDate(current.getValue()),
+    cell: (current) => formatDate(current.getValue() as string),
   },
 ];

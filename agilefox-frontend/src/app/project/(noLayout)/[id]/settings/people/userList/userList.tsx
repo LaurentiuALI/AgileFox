@@ -1,6 +1,6 @@
 "use client";
 
-import { useGetUsersOfProject } from "@/data/get-projects";
+import { useGetUsersOfProject } from "@/data/project/useProject";
 import { DataTable } from "./data-table";
 import { columns } from "./column";
 

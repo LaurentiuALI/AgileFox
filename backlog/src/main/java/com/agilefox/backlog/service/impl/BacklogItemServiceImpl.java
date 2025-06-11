@@ -20,6 +20,7 @@ import com.agilefox.backlog.repository.StateRepository;
 import com.agilefox.backlog.repository.TypeRepository;
 import com.agilefox.backlog.service.BacklogItemService;
 import com.agilefox.backlog.service.CardService;
+import com.agilefox.backlog.service.StateService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -42,20 +43,31 @@ public class BacklogItemServiceImpl implements BacklogItemService {
     private final ProjectClient projectClient;
     private final CheckItemRepository checkItemRepository;
     private final ModelMapper modelMapper;
+    private final StateService stateService;
 
     @Override
     public List<BacklogItemResponseDTO> getBacklogItems(Long projectId, Long id, String username) {
         log.info("Querying for backlog items for project {}", projectId);
         log.info("Username {}", username);
 
-        return backlogItemRepository.findAll()
+        List<BacklogItem> backlogItems = backlogItemRepository.findAll()
                 .stream()
                 .filter(item -> projectId == null || projectId.equals(item.getProjectId()))
                 .filter(item -> id == null || item.getId() == id)
                 .filter(item -> username == null || username.equals(item.getUsername()))
-                .map(item -> modelMapper.map(item, BacklogItemResponseDTO.class)).toList();
+                .toList();
+
+        return backlogItems.stream()
+                .map(this::convertToResponseDTO)
+                .toList();
+
     }
 
+    @Override
+    public BacklogItemResponseDTO getBacklogItem(Long projectId, Long id) {
+        BacklogItem item = backlogItemRepository.findByIdAndProjectId(id, projectId);
+        return convertToResponseDTO(item);
+    }
 
     @Override
     public List<BacklogItemResponseDTO> getAllBacklogItemStateTypes(Long projectId) {
@@ -88,11 +100,7 @@ public class BacklogItemServiceImpl implements BacklogItemService {
     @Override
     public ScoreResponseDTO getBacklogItemScore(long backlogItemId) {
         log.info("START - Query for Backlog item score with id {}", backlogItemId);
-
-        BacklogItem backlogItem = backlogItemRepository.findById(backlogItemId)
-                .orElseThrow(() -> new ResourceNotFoundException("BacklogItem not found with id " + backlogItemId));
         List<Card> cards = cardRepository.findByBacklogitem_Id(backlogItemId);
-
 
         int totalScore = 0;
         int actualScore = 0;
@@ -121,8 +129,9 @@ public class BacklogItemServiceImpl implements BacklogItemService {
         // Validate and retrieve type and state using orElseThrow
         Type type = typeRepository.findById(requestDTO.getTypeId())
                 .orElseThrow(() -> new ResourceNotFoundException("Type with id " + requestDTO.getTypeId() + " not found"));
-        State state = stateRepository.findById(requestDTO.getStateId())
-                .orElseThrow(() -> new ResourceNotFoundException("State with id " + requestDTO.getStateId() + " not found"));
+
+        StateResponseDTO stateResponse = stateService.getFirstStateOfType(type.getId());
+        State state = stateRepository.findById(stateResponse.getId()).orElseThrow(() -> new ResourceNotFoundException("State with id " + stateResponse.getId() + " not found"));
 
         // Create and save BacklogItem to generate an ID
         BacklogItem backlogItem = BacklogItem.builder()
@@ -131,6 +140,7 @@ public class BacklogItemServiceImpl implements BacklogItemService {
                 .state(state)
                 .title(requestDTO.getTitle())
                 .description(requestDTO.getDescription())
+                .username(requestDTO.getUsername())
                 .build();
         backlogItem = backlogItemRepository.save(backlogItem);
 
@@ -242,8 +252,9 @@ public class BacklogItemServiceImpl implements BacklogItemService {
         log.info("END - Deleted backlog item with id {}", id);
     }
 
-    // Helper method to convert BacklogItem to its ResponseDTO using ModelMapper
     private BacklogItemResponseDTO convertToResponseDTO(BacklogItem item) {
+        ScoreResponseDTO score = getBacklogItemScore(item.getId());
+
         return new BacklogItemResponseDTO(
                 item.getId(),
                 item.getUid(),
@@ -252,7 +263,9 @@ public class BacklogItemServiceImpl implements BacklogItemService {
                 modelMapper.map(item.getState(), StateResponseDTO.class),
                 item.getTitle(),
                 item.getDescription(),
-                item.getUsername()
+                item.getUsername(),
+                score.getTotalScore(),
+                score.getActualScore()
         );
     }
 }

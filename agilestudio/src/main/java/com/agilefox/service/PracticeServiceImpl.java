@@ -4,6 +4,7 @@ import com.agilefox.model.Practice;
 import com.agilefox.repository.PracticeRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.bson.types.ObjectId;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -39,6 +40,7 @@ public class PracticeServiceImpl {
     }
 
     public void deletePractice(String id) {
+        System.out.println("Practice with id " + id + " deleted");
         if( practiceRepository.findById(id).isPresent() ) {
             practiceRepository.deleteById(id);
         } else {
@@ -48,6 +50,10 @@ public class PracticeServiceImpl {
     }
 
     public List<Practice> getPracticesOfProject(Long projectId) {
+        log.info("PracticeServiceImpl.getPracticesOfProject");
+        practiceRepository.getPracticeByProjectId(projectId).forEach(practice -> {
+            log.info(practice.toString());
+        });
         return practiceRepository.getPracticeByProjectId(projectId);
     }
 }

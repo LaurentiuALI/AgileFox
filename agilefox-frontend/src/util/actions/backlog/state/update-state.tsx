@@ -1,7 +1,7 @@
 "use server";
 
 import { State } from "@/types/State";
-import { getIdToken } from "@/util/SessionTokenAccesor";
+import { getAccessToken } from "@/util/SessionTokenAccesor";
 export async function updateState({
   id,
   projectId,
@@ -17,9 +17,9 @@ export async function updateState({
   typeId: string | number;
   stateOrder: number;
 }): Promise<State | undefined> {
-  const idToken = await getIdToken();
+  const accessToken = await getAccessToken();
 
-  if (!idToken) {
+  if (!accessToken) {
     console.error(
       "[updateState] User is not authenticated or token is missing."
     );
@@ -30,7 +30,7 @@ export async function updateState({
     const response = await fetch(`${process.env.BACKEND_URL}/state`, {
       method: "PATCH",
       headers: {
-        Authorization: `Bearer ${idToken}`,
+        Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({

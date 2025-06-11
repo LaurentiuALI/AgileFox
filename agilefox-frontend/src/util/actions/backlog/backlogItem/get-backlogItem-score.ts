@@ -1,16 +1,15 @@
 "use server";
 
 import { Score, ScoreSchema } from "@/types/Score";
-import { getIdToken } from "@/util/SessionTokenAccesor";
+import { getAccessToken } from "@/util/SessionTokenAccesor";
 
 export async function getBacklogItemScore({
   backlogItemId,
 }: {
   backlogItemId: number | undefined;
 }): Promise<Score> {
-  const idToken = await getIdToken();
-
-  if (!idToken) {
+  const accessToken = await getAccessToken();
+  if (!accessToken) {
     throw new Error("User is not authenticated or token is missing");
   }
 
@@ -20,7 +19,7 @@ export async function getBacklogItemScore({
       {
         method: "GET",
         headers: {
-          Authorization: `Bearer ${idToken}`,
+          Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/json",
         },
       }

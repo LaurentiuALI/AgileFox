@@ -18,7 +18,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { useGetUsers } from "@/data/get-users";
+import { useGetUsers } from "@/data/user/useUsers";
 import { addUserToProject } from "@/util/actions/user/add-user-to-project";
 
 export function UserSelect({ projectId }: { projectId: number }) {
@@ -45,7 +45,7 @@ export function UserSelect({ projectId }: { projectId: number }) {
           >
             {value
               ? users.find((user) => user.username === value)?.firstName
-              : "Select framework..."}
+              : "Select user..."}
             <ChevronsUpDown className="opacity-50" />
           </Button>
         </PopoverTrigger>

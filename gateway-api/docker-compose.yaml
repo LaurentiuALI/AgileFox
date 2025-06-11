@@ -47,7 +47,6 @@ services:
       - "8080"
     networks:
       - agilefox-net
-
   user-microservice:
     image: user-microservice:v1
     container_name: user-microservice

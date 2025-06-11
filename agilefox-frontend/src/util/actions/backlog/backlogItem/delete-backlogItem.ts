@@ -1,11 +1,11 @@
 "use server";
 
-import { getIdToken } from "@/util/SessionTokenAccesor";
+import { getAccessToken } from "@/util/SessionTokenAccesor";
 
 export async function deleteBacklogItem(itemId: number): Promise<boolean> {
-  const idToken = await getIdToken();
+  const accessToken = await getAccessToken();
 
-  if (!idToken) {
+  if (!accessToken) {
     console.error(
       "[deleteBacklogItem] User is not authenticated or token is missing."
     );
@@ -14,11 +14,11 @@ export async function deleteBacklogItem(itemId: number): Promise<boolean> {
 
   try {
     const response = await fetch(
-      `${process.env.BACKEND_URL}/backlogitem/item/${itemId}`,
+      `${process.env.BACKEND_URL}/backlogitem/item?id=${itemId}`,
       {
         method: "DELETE",
         headers: {
-          Authorization: `Bearer ${idToken}`,
+          Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/json",
         },
       }

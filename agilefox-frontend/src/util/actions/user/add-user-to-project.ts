@@ -1,6 +1,6 @@
 "use server";
 
-import { getIdToken } from "@/util/SessionTokenAccesor";
+import { getAccessToken } from "@/util/SessionTokenAccesor";
 
 export async function addUserToProject({
   username,
@@ -9,9 +9,9 @@ export async function addUserToProject({
   username: string;
   projectId: number;
 }): Promise<boolean> {
-  const idToken = await getIdToken();
+  const accessToken = await getAccessToken();
 
-  if (!idToken) {
+  if (!accessToken) {
     console.error(
       "[addUserToProject] User is not authenticated or token is missing."
     );
@@ -24,7 +24,7 @@ export async function addUserToProject({
       {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${idToken}`,
+          Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/json",
         },
       }

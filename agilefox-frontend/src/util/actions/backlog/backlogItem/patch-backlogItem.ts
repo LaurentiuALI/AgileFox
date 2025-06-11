@@ -1,6 +1,6 @@
 "use server";
 
-import { getIdToken } from "@/util/SessionTokenAccesor";
+import { getAccessToken } from "@/util/SessionTokenAccesor";
 
 export async function patchBacklogItem({
   id,
@@ -15,9 +15,9 @@ export async function patchBacklogItem({
   title?: string;
   description?: string;
 }): Promise<boolean> {
-  const idToken = await getIdToken();
+  const accessToken = await getAccessToken();
 
-  if (!idToken) {
+  if (!accessToken) {
     console.error("User is not authenticated or token is missing.");
     throw new Error("Authentication required. Please log in.");
   }
@@ -28,7 +28,7 @@ export async function patchBacklogItem({
       {
         method: "PATCH",
         headers: {
-          Authorization: `Bearer ${idToken}`,
+          Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ projectId, username, title, description }), // Partial update

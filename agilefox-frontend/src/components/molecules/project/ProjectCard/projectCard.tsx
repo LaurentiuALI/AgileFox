@@ -11,10 +11,11 @@ import {
 import Link from "next/link";
 import { Project } from "@/types/Project";
 import { Button } from "@/components/ui/button";
-import { Settings } from "lucide-react";
+import { Settings, Trash } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { canManageProject } from "@/util/roleManagement";
 import { Badge } from "@/components/ui/badge";
+import { useDeleteProject } from "@/data/project/useProject";
+import RoleGuard from "../../RoleGuard";
 
 interface IProjectCard {
   project: Project;
@@ -27,7 +28,7 @@ export default function ProjectCard({
 }: IProjectCard) {
   const { data } = useSession();
 
-  const manageAccess = canManageProject(data?.user.roles);
+  const mutation = useDeleteProject();
 
   return (
     <div className="p-1">
@@ -35,11 +36,16 @@ export default function ProjectCard({
         <div className="h-full w-3 bg-gradient-to-b from-red-600 to-orange-500 rounded-l-xl bg-primary absolute" />
         <CardHeader className="flex flex-row justify-between">
           <CardTitle className="text-2xl">{project?.name}</CardTitle>
-          {manageAccess && (
-            <Link href={`/project/${project.id}/settings`}>
-              <Settings size={24} />
-            </Link>
-          )}
+          <RoleGuard roles={data?.user.roles} allowed={["admin", "product owner"]}>
+            <div className="flex gap-4">
+              <Link href={`/project/${project.id}/settings`}>
+                <Settings size={24} />
+              </Link>
+              <RoleGuard roles={data?.user.roles} allowed={["admin"]}>
+                <Trash className="text-red-500" onClick={() => mutation.mutate({ projectId: project.id })} />
+              </RoleGuard>
+            </div>
+          </RoleGuard>
         </CardHeader>
         <CardContent className="md:visible">
           <CardTitle className="text-xl font-normal">Description</CardTitle>

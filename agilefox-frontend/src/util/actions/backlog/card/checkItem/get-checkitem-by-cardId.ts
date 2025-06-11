@@ -1,16 +1,16 @@
 "use server";
 
 import { CheckItem, CheckItemSchema } from "@/types/CheckItem";
-import { getIdToken } from "@/util/SessionTokenAccesor";
+import { getAccessToken } from "@/util/SessionTokenAccesor";
 
 export async function getCheckItemByCardId({
   cardId,
 }: {
   cardId: number;
 }): Promise<CheckItem[] | undefined> {
-  const idToken = await getIdToken();
+  const accessToken = await getAccessToken();
 
-  if (!idToken) {
+  if (!accessToken) {
     throw new Error("User is not authenticated or token is missing");
   }
 
@@ -20,7 +20,7 @@ export async function getCheckItemByCardId({
       {
         method: "GET",
         headers: {
-          Authorization: `Bearer ${idToken}`,
+          Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/json",
         },
       }

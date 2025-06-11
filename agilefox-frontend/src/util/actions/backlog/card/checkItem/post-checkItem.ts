@@ -1,7 +1,7 @@
 "use server";
 
 import { CheckItem, CheckItemSchema } from "@/types/CheckItem";
-import { getIdToken } from "@/util/SessionTokenAccesor";
+import { getAccessToken } from "@/util/SessionTokenAccesor";
 export async function postCheckitem({
   cardId,
   information,
@@ -9,9 +9,9 @@ export async function postCheckitem({
   cardId: string | number;
   information: string;
 }): Promise<CheckItem | undefined> {
-  const idToken = await getIdToken();
+  const accessToken = await getAccessToken();
 
-  if (!idToken) {
+  if (!accessToken) {
     console.error(
       "[postCheckitem] User is not authenticated or token is missing."
     );
@@ -22,7 +22,7 @@ export async function postCheckitem({
     const response = await fetch(`${process.env.BACKEND_URL}/checkitem`, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${idToken}`,
+        Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
